@@ -40,10 +40,11 @@ function generateUniqueID(judul) {
 // 3. ENGINE GENERATOR & QR CODE FIX
 // ==========================================
 function initGenerator() {
+    // QR Code Resolusi HD (256x256) dengan Level L agar mudah di-scan
     qrCodeObj = new QRCode(document.getElementById("qrcode"), {
         text: "SAI ROOTS MUSIC VERIFIED",
-        width: 256,
-        height: 256,
+        width: 256,  
+        height: 256, 
         colorDark : "#000000",
         colorLight : "#ffffff",
         correctLevel : QRCode.CorrectLevel.L
@@ -61,22 +62,31 @@ function updatePreview() {
         alamat: document.getElementById('input-alamat').value || ".......................................",
         judul: document.getElementById('input-judul').value || ".......................................",
         album: document.getElementById('input-album').value,
-        tanggalOri: document.getElementById('input-tanggal').value
+        tanggalOri: document.getElementById('input-tanggal').value,
+        rilisOri: document.getElementById('input-rilis').value,
+        isrc: document.getElementById('input-isrc').value || ".......................................",
+        upc: document.getElementById('input-upc').value || "......................................."
     };
     
-    const tanggalFormat = formatDate(data.tanggalOri);
+    const tanggalPembuatanFormat = formatDate(data.tanggalOri);
+    const tanggalRilisFormat = formatDate(data.rilisOri);
     const nomorUnik = generateUniqueID(data.judul);
 
+    // Tulis ke Kertas Sertifikat
     document.getElementById('tampil-pencipta').innerText = data.pencipta;
     document.getElementById('tampil-pemegang').innerText = data.pemegang;
     document.getElementById('tampil-alamat').innerText = data.alamat;
     document.getElementById('tampil-judul').innerText = data.judul;
-    document.getElementById('tampil-tanggal').innerText = tanggalFormat;
-    document.getElementById('tampil-ttd-tanggal').innerText = tanggalFormat !== "......................................." ? tanggalFormat : "........................";
+    document.getElementById('tampil-tanggal').innerText = tanggalPembuatanFormat;
+    document.getElementById('tampil-rilis').innerText = tanggalRilisFormat;
+    document.getElementById('tampil-isrc').innerText = data.isrc;
+    document.getElementById('tampil-upc').innerText = data.upc;
+    document.getElementById('tampil-ttd-tanggal').innerText = tanggalPembuatanFormat !== "......................................." ? tanggalPembuatanFormat : "........................";
     document.getElementById('tampil-nomor').innerText = nomorUnik;
     document.getElementById('tampil-album').innerText = data.album.trim() === "" ? "- (Single)" : data.album;
 
-    const qrText = `NO: ${nomorUnik}\nPENCIPTA: ${data.pencipta}\nHAK CIPTA: ${data.pemegang}\nJUDUL: ${data.judul}\nALBUM: ${data.album || 'Single'}\nTANGGAL: ${tanggalFormat}`;
+    // Update QR Code Text dengan Data Baru (ISRC, UPC, Rilis)
+    const qrText = `NO: ${nomorUnik}\nPENCIPTA: ${data.pencipta}\nHAK CIPTA: ${data.pemegang}\nJUDUL: ${data.judul}\nALBUM: ${data.album || 'Single'}\nRILIS: ${tanggalRilisFormat}\nISRC: ${data.isrc}\nUPC: ${data.upc}`;
     if (qrCodeObj) {
         qrCodeObj.makeCode(qrText);
     }
@@ -117,22 +127,21 @@ async function captureCanvas() {
     const wrapper = document.querySelector('.preview-wrapper');
     const element = document.getElementById('certificate-canvas');
 
-    // Simpan posisi asli biar bisa dibalikin nanti
     const oldDisplay = modal.style.display;
     const oldTransform = wrapper.style.transform;
     const oldOpacity = modal.style.opacity;
 
-    // Tampilkan ukuran 1:1, tapi kasih opacity 0.01 biar gak kedip jelas di layar lu
+    // Tampilkan 1:1 transparan sebentar biar sistem bisa baca ukuran asli kertas
     modal.style.display = 'block';
     modal.style.opacity = '0.01'; 
     wrapper.style.transform = 'scale(1)'; 
 
-    // WAJIB: Kasih waktu browser 300ms buat nyiapin rendering pikselnya (Solusi layar blank)
+    // Kasih waktu loading 300ms buat rendering piksel
     await new Promise(r => setTimeout(r, 300));
 
     try {
         const canvas = await html2canvas(element, { 
-            scale: 2, // Resolusi tinggi
+            scale: 2, 
             useCORS: true,
             backgroundColor: "#ffffff",
             logging: false,
@@ -141,7 +150,7 @@ async function captureCanvas() {
             windowWidth: 794,
             windowHeight: 1123,
             onclone: (clonedDoc) => {
-                // SOLUSI TEKS KESURUPAN/NUMPUK: Matikan CSS yang bikin bug html2canvas
+                // Matikan CSS spasi yang bikin html2canvas error (teks numpuk)
                 const allElements = clonedDoc.querySelectorAll('*');
                 allElements.forEach(el => {
                     const style = window.getComputedStyle(el);
@@ -156,7 +165,6 @@ async function captureCanvas() {
         });
         return canvas;
     } finally {
-        // Balikin kondisi UI kaya semula
         modal.style.display = oldDisplay;
         modal.style.opacity = oldOpacity || '1';
         wrapper.style.transform = oldTransform;
