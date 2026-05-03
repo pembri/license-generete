@@ -1,202 +1,162 @@
-/* =========================================
-   A. Tampilan Panel Input
-   ========================================= */
-.ui-input {
-    width: 100%;
-    background-color: #374151;
-    color: #ffffff;
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    margin-top: 0.25rem;
-}
-.ui-input:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #ca8a04;
+const SECURITY_PIN = "Anjing526";
+let qrCodeObj = null;
+
+/* =========================
+   LOGIN
+========================= */
+function checkPassword() {
+    const input = document.getElementById('password-input').value;
+    if (input === SECURITY_PIN) {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        document.getElementById('main-app').classList.add('flex');
+        initGenerator();
+    } else {
+        document.getElementById('login-error').classList.remove('hidden');
+    }
 }
 
-/* =========================================
-   B. Kertas Sertifikat (A4 FIX)
-   ========================================= */
-.cert-paper {
-    position: relative;
-    width: 794px;
-    height: 1123px;
+document.getElementById('password-input')
+.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') checkPassword();
+});
 
-    background-image: url('assets/bingkai.png');
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-color: #ffffff;
-
-    color: #000000;
-    font-family: 'Times New Roman', Times, serif;
-
-    overflow: hidden;
-    box-sizing: border-box;
-    display: block;
-    margin: 0 auto;
+/* =========================
+   HELPER
+========================= */
+function formatDate(dateString) {
+    if (!dateString) return ".......................................";
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('id-ID', options);
 }
 
-/* Area Konten */
-.cert-content {
-    position: absolute;
-    top: 130px;
-    left: 110px;
-    width: 574px;
-    height: 800px;
+function generateUniqueID(judul) {
+    if (!judul) return "SRM-0000-0000";
+    const datePart = new Date().toISOString().slice(2, 7).replace('-', '');
+    const randomPart = Math.floor(1000 + Math.random() * 9000);
+    return `SRM-${datePart}-${randomPart}`;
 }
 
-/* Header */
-.cert-header {
-    text-align: center;
-    margin-bottom: 25px;
-}
-.cert-header h2 {
-    font-size: 16px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    margin-bottom: 5px;
-}
-.cert-header h1 {
-    font-size: 20px;
-    font-weight: bold;
-    text-decoration: underline;
-    letter-spacing: 2px;
+/* =========================
+   UPDATE PREVIEW
+========================= */
+function updatePreview() {
+    const data = {
+        pencipta: document.getElementById('input-pencipta').value || ".......................................",
+        pemegang: document.getElementById('input-pemegang').value || "SAI Roots Music",
+        alamat: document.getElementById('input-alamat').value || ".......................................",
+        judul: document.getElementById('input-judul').value || ".......................................",
+        album: document.getElementById('input-album').value,
+        tanggalOri: document.getElementById('input-tanggal').value
+    };
+
+    const tanggalFormat = formatDate(data.tanggalOri);
+    const nomorUnik = generateUniqueID(data.judul);
+
+    document.getElementById('tampil-pencipta').innerText = data.pencipta;
+    document.getElementById('tampil-pemegang').innerText = data.pemegang;
+    document.getElementById('tampil-alamat').innerText = data.alamat;
+    document.getElementById('tampil-judul').innerText = data.judul;
+    document.getElementById('tampil-tanggal').innerText = tanggalFormat;
+    document.getElementById('tampil-ttd-tanggal').innerText =
+        tanggalFormat !== "......................................." ? tanggalFormat : "........................";
+    document.getElementById('tampil-nomor').innerText = nomorUnik;
+    document.getElementById('tampil-album').innerText =
+        data.album.trim() === "" ? "- (Single)" : data.album;
+
+    // QR
+    document.getElementById('qrcode').innerHTML = "";
+    const qrText = `NO: ${nomorUnik}
+PENCIPTA: ${data.pencipta}
+HAK CIPTA: ${data.pemegang}
+JUDUL: ${data.judul}
+ALBUM: ${data.album || 'Single'}
+TANGGAL: ${tanggalFormat}`;
+
+    qrCodeObj = new QRCode(document.getElementById("qrcode"), {
+        text: qrText,
+        width: 68,
+        height: 68
+    });
 }
 
-/* Preamble */
-.cert-preamble {
-    text-align: justify;
-    font-size: 14px;
-    line-height: 1.5;
-    margin-bottom: 25px;
+function initGenerator() {
+    const inputs = document.querySelectorAll('form input');
+    inputs.forEach(input => input.addEventListener('input', updatePreview));
+    updatePreview();
 }
 
-/* Tabel */
-.cert-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-.cert-table td {
-    padding-bottom: 8px;
-    vertical-align: top;
+/* =========================
+   🔥 CORE FIX EXPORT
+========================= */
+function cloneForExport() {
+    const original = document.getElementById('certificate-canvas');
+
+    const clone = original.cloneNode(true);
+
+    // Bungkus clone biar bersih (tanpa scale)
+    const wrapper = document.createElement('div');
+    wrapper.style.position = "fixed";
+    wrapper.style.top = "-9999px";
+    wrapper.style.left = "-9999px";
+    wrapper.style.width = "794px";
+    wrapper.style.height = "1123px";
+    wrapper.style.background = "#ffffff";
+
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+
+    return wrapper;
 }
 
-.c-num { width: 30px; font-weight: bold; }
-.c-lbl { width: 170px; }
-.c-tik { width: 15px; text-align: center; }
-.c-val { width: 359px; }
+/* =========================
+   EXPORT JPG
+========================= */
+function downloadImage() {
+    const wrapper = cloneForExport();
 
-/* Sub Table */
-.sub-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.sub-table td {
-    padding-bottom: 3px;
-}
-.s-lbl { width: 130px; color: #333; }
-.s-tik { width: 15px; text-align: center; }
+    html2canvas(wrapper, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+    }).then(canvas => {
 
-/* Utility */
-.cert-bold { font-weight: bold; }
-.cert-upper { text-transform: uppercase; }
-.cert-mono { font-family: 'Courier New', monospace; letter-spacing: 1px; }
-.cert-blue { color: #000080; }
+        const link = document.createElement('a');
+        const fileName = document.getElementById('input-judul').value
+            .replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
 
-/* Disclaimer */
-.cert-disclaimer {
-    margin-top: 35px;
-    padding-top: 15px;
-    border-top: 1px solid #cccccc;
-    text-align: justify;
-    font-size: 12px;
-    line-height: 1.5;
+        link.download = `Sertifikat_${fileName}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 1.0);
+        link.click();
+
+        document.body.removeChild(wrapper);
+    });
 }
 
-/* =========================================
-   C. Footer (QR & TTD)
-   ========================================= */
-.cert-barcode-box {
-    position: absolute;
-    bottom: 120px;
-    left: 110px;
-    text-align: center;
-}
-#qrcode {
-    border: 2px solid #b8860b;
-    padding: 4px;
-    background: #fff;
-    width: 76px;
-    height: 76px;
-    margin-bottom: 5px;
-}
-.cert-verify-text {
-    font-size: 9px;
-    font-weight: bold;
-    color: #b8860b;
-    letter-spacing: 1px;
-}
+/* =========================
+   EXPORT PDF
+========================= */
+function downloadPDF() {
+    const wrapper = cloneForExport();
 
-/* TTD */
-.cert-ttd-box {
-    position: absolute;
-    bottom: 120px;
-    right: 110px;
-    width: 250px;
-    text-align: center;
-}
-.ttd-kota {
-    font-size: 14px;
-    margin-bottom: 70px;
-}
-.ttd-jabatan {
-    font-size: 14px;
-    font-weight: bold;
-    text-decoration: underline;
-}
-.ttd-nama {
-    font-size: 12px;
-}
+    const { jsPDF } = window.jspdf;
 
-/* Stempel */
-.cert-stempel {
-    position: absolute;
-    bottom: 120px;
-    right: 160px;
-    width: 140px;
-    opacity: 0.85;
-    transform: rotate(-12deg);
-    mix-blend-mode: multiply;
-}
+    html2canvas(wrapper, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+    }).then(canvas => {
 
-/* =========================================
-   D. PREVIEW SYSTEM (FIX UTAMA)
-   ========================================= */
-.preview-container {
-    width: 100%;
-    height: 100vh;
-    overflow: auto;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 20px;
-}
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
 
-/* Yang di-scale cuma wrapper */
-.preview-wrapper {
-    transform: scale(0.75);
-    transform-origin: top center;
-}
+        const pdf = new jsPDF('p', 'px', [794, 1123]);
+        pdf.addImage(imgData, 'JPEG', 0, 0, 794, 1123);
 
-/* Responsive */
-@media (max-width: 1024px) {
-    .preview-wrapper { transform: scale(0.6); }
-}
-@media (max-width: 768px) {
-    .preview-wrapper { transform: scale(0.5); }
-}
-@media (max-width: 480px) {
-    .preview-wrapper { transform: scale(0.4); }
+        const fileName = document.getElementById('input-judul').value
+            .replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
+
+        pdf.save(`Lisensi_${fileName}.pdf`);
+
+        document.body.removeChild(wrapper);
+    });
 }
