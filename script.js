@@ -1,9 +1,7 @@
 const SECURITY_PIN = "Anjing526";
 let qrCodeObj = null;
 
-/* =========================
-   LOGIN
-========================= */
+// Keamanan
 function checkPassword() {
     const input = document.getElementById('password-input').value;
     if (input === SECURITY_PIN) {
@@ -16,14 +14,9 @@ function checkPassword() {
     }
 }
 
-document.getElementById('password-input')
-.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') checkPassword();
-});
+document.getElementById('password-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });
 
-/* =========================
-   HELPER
-========================= */
+// Helper
 function formatDate(dateString) {
     if (!dateString) return ".......................................";
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -37,9 +30,7 @@ function generateUniqueID(judul) {
     return `SRM-${datePart}-${randomPart}`;
 }
 
-/* =========================
-   UPDATE PREVIEW
-========================= */
+// Engine Update
 function updatePreview() {
     const data = {
         pencipta: document.getElementById('input-pencipta').value || ".......................................",
@@ -49,7 +40,7 @@ function updatePreview() {
         album: document.getElementById('input-album').value,
         tanggalOri: document.getElementById('input-tanggal').value
     };
-
+    
     const tanggalFormat = formatDate(data.tanggalOri);
     const nomorUnik = generateUniqueID(data.judul);
 
@@ -58,124 +49,98 @@ function updatePreview() {
     document.getElementById('tampil-alamat').innerText = data.alamat;
     document.getElementById('tampil-judul').innerText = data.judul;
     document.getElementById('tampil-tanggal').innerText = tanggalFormat;
-    document.getElementById('tampil-ttd-tanggal').innerText =
-        tanggalFormat !== "......................................." ? tanggalFormat : "........................";
+    document.getElementById('tampil-ttd-tanggal').innerText = tanggalFormat !== "......................................." ? tanggalFormat : "........................";
     document.getElementById('tampil-nomor').innerText = nomorUnik;
-    document.getElementById('tampil-album').innerText =
-        data.album.trim() === "" ? "- (Single)" : data.album;
+    document.getElementById('tampil-album').innerText = data.album.trim() === "" ? "- (Single)" : data.album;
 
-    // QR
+    // Reset & Buat ulang QR Code
     document.getElementById('qrcode').innerHTML = "";
-    const qrText = `NO: ${nomorUnik}
-PENCIPTA: ${data.pencipta}
-HAK CIPTA: ${data.pemegang}
-JUDUL: ${data.judul}
-ALBUM: ${data.album || 'Single'}
-TANGGAL: ${tanggalFormat}`;
-
-    const qrContainer = document.getElementById("qrcode");
-qrContainer.innerHTML = "";
-
-// Buat QR sementara
-const tempQR = document.createElement("div");
-new QRCode(tempQR, {
-    text: qrText,
-    width: 128,
-    height: 128
-});
-
-// Tunggu render → ambil jadi IMG
-setTimeout(() => {
-    const canvas = tempQR.querySelector("canvas");
-    if (canvas) {
-        const img = document.createElement("img");
-        img.src = canvas.toDataURL("image/png");
-        img.style.width = "68px";
-        img.style.height = "68px";
-
-        qrContainer.innerHTML = "";
-        qrContainer.appendChild(img);
-    }
-}, 100);
+    const qrText = `NO: ${nomorUnik}\nPENCIPTA: ${data.pencipta}\nHAK CIPTA: ${data.pemegang}\nJUDUL: ${data.judul}\nALBUM: ${data.album || 'Single'}\nTANGGAL: ${tanggalFormat}`;
+    
+    qrCodeObj = new QRCode(document.getElementById("qrcode"), {
+        text: qrText,
+        width: 68,
+        height: 68,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.M
+    });
 }
 
 function initGenerator() {
-    const inputs = document.querySelectorAll('form input');
+    const inputs = document.querySelectorAll('#main-app input');
     inputs.forEach(input => input.addEventListener('input', updatePreview));
+    updatePreview(); 
+}
+
+// Preview Modal
+function openPreview() {
     updatePreview();
+    document.getElementById('preview-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 }
 
-/* =========================
-   🔥 CORE FIX EXPORT
-========================= */
-function cloneForExport() {
-    const original = document.getElementById('certificate-canvas');
-
-    const clone = original.cloneNode(true);
-
-    // Bungkus clone biar bersih (tanpa scale)
-    const wrapper = document.createElement('div');
-    wrapper.style.position = "fixed";
-    wrapper.style.top = "-9999px";
-    wrapper.style.left = "-9999px";
-    wrapper.style.width = "794px";
-    wrapper.style.height = "1123px";
-    wrapper.style.background = "#ffffff";
-
-    wrapper.appendChild(clone);
-    document.body.appendChild(wrapper);
-
-    return wrapper;
+function closePreview() {
+    document.getElementById('preview-modal').classList.add('hidden');
+    document.body.style.overflow = '';
 }
 
-/* =========================
-   EXPORT JPG
-========================= */
-function downloadImage() {
-    const wrapper = cloneForExport();
+// Tutup modal jika klik di luar area
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('preview-modal').addEventListener('click', function(e) {
+        if (e.target === this) closePreview();
+    });
+});
 
-    html2canvas(wrapper, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff"
-    }).then(canvas => {
+// Engine Ekspor - capture langsung dari elemen asli tanpa transform
+function captureCanvas() {
+    return new Promise((resolve) => {
+        updatePreview();
+        // Sedikit delay agar QR Code selesai render
+        setTimeout(() => {
+            const element = document.getElementById('certificate-canvas');
+            // Simpan & reset transform sementara agar html2canvas capture ukuran asli
+            const wrapper = element.closest('.preview-scale-wrapper');
+            const prevTransform = wrapper ? wrapper.style.transform : null;
+            if (wrapper) wrapper.style.transform = 'scale(1)';
 
-        const link = document.createElement('a');
-        const fileName = document.getElementById('input-judul').value
-            .replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
-
-        link.download = `Sertifikat_${fileName}.jpg`;
-        link.href = canvas.toDataURL('image/jpeg', 1.0);
-        link.click();
-
-        document.body.removeChild(wrapper);
+            html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: "#ffffff",
+                logging: false,
+                width: 794,
+                height: 1123,
+                scrollX: 0,
+                scrollY: 0
+            }).then(canvas => {
+                if (wrapper && prevTransform !== null) wrapper.style.transform = prevTransform;
+                resolve(canvas);
+            });
+        }, 300);
     });
 }
 
-/* =========================
-   EXPORT PDF
-========================= */
-function downloadPDF() {
-    const wrapper = cloneForExport();
-
-    const { jsPDF } = window.jspdf;
-
-    html2canvas(wrapper, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff"
-    }).then(canvas => {
-
+function downloadImage() {
+    captureCanvas().then(canvas => {
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        const link = document.createElement('a');
+        const fileName = document.getElementById('input-judul').value.replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
+        link.download = `Sertifikat_${fileName}.jpg`;
+        link.href = imgData;
+        link.click();
+    });
+}
 
+function downloadPDF() {
+    captureCanvas().then(canvas => {
+        const { jsPDF } = window.jspdf;
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
         const pdf = new jsPDF('p', 'px', [794, 1123]);
         pdf.addImage(imgData, 'JPEG', 0, 0, 794, 1123);
-
-        const fileName = document.getElementById('input-judul').value
-            .replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
-
+        const fileName = document.getElementById('input-judul').value.replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
         pdf.save(`Lisensi_${fileName}.pdf`);
-
-        document.body.removeChild(wrapper);
     });
 }
+
