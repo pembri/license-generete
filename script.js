@@ -42,11 +42,11 @@ function generateUniqueID(judul) {
 function initGenerator() {
     qrCodeObj = new QRCode(document.getElementById("qrcode"), {
         text: "SAI ROOTS MUSIC VERIFIED",
-        width: 68,
-        height: 68,
+        width: 256,
+        height: 256,
         colorDark : "#000000",
         colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.M
+        correctLevel : QRCode.CorrectLevel.L
     });
 
     const inputs = document.querySelectorAll('form input');
