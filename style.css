@@ -1,13 +1,21 @@
-/* =========================================
-   A. INPUT UI (AMAN)
-   ========================================= */
+/* ================================
+   GLOBAL RESET
+================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ================================
+   INPUT UI
+================================ */
 .ui-input {
     width: 100%;
-    background-color: #374151;
-    color: #ffffff;
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    margin-top: 0.25rem;
+    background: #374151;
+    color: #fff;
+    border-radius: 6px;
+    padding: 8px 10px;
     border: none;
 }
 .ui-input:focus {
@@ -15,53 +23,42 @@
     box-shadow: 0 0 0 2px #ca8a04;
 }
 
-/* =========================================
-   B. FIX GLOBAL RENDER (ANTI BUG)
-   ========================================= */
-* {
-    box-sizing: border-box;
+/* ================================
+   PREVIEW WRAPPER
+================================ */
+#preview-wrapper {
+    max-height: 100vh;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
 }
 
-.cert-paper * {
-    transform: none !important; /* 🔥 MATIIN efek ghost dari parent */
-    backface-visibility: hidden;
-    -webkit-font-smoothing: antialiased;
-}
-
-/* =========================================
-   C. KERTAS SERTIFIKAT (A4 FIX)
-   ========================================= */
+/* ================================
+   KERTAS A4 FIX
+================================ */
 .cert-paper {
     position: relative;
     width: 794px;
     height: 1123px;
 
-    background-image: url('assets/bingkai.png');
+    background: #fff url('assets/bingkai.png') no-repeat center;
     background-size: 100% 100%;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-color: #ffffff;
 
-    color: #000000;
-    font-family: 'Times New Roman', Times, serif;
+    font-family: 'Times New Roman', serif;
+    color: #000;
 
     overflow: hidden;
-    z-index: 1;
-
-    /* 🔥 penting biar html2canvas stabil */
-    image-rendering: optimizeQuality;
 }
 
-/* =========================================
-   D. AREA KONTEN
-   ========================================= */
+/* ================================
+   KONTEN UTAMA
+================================ */
 .cert-content {
     position: absolute;
     top: 130px;
     left: 110px;
     width: 574px;
-    height: 800px;
-    z-index: 10;
 }
 
 /* HEADER */
@@ -72,150 +69,98 @@
 .cert-header h2 {
     font-size: 16px;
     font-weight: bold;
-    letter-spacing: 1px;
-    margin-bottom: 5px;
 }
 .cert-header h1 {
     font-size: 20px;
     font-weight: bold;
     text-decoration: underline;
-    letter-spacing: 2px;
 }
 
 /* PARAGRAF */
 .cert-preamble {
     text-align: justify;
     font-size: 14px;
-    line-height: 1.5;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
-/* TABEL */
+/* ================================
+   TABLE
+================================ */
 .cert-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
-    line-height: 1.5;
 }
 .cert-table td {
-    padding-bottom: 8px;
+    padding: 6px 0;
     vertical-align: top;
 }
 
-.c-num { width: 30px; font-weight: bold; }
-.c-lbl { width: 170px; }
-.c-tik { width: 15px; text-align: center; }
-.c-val { width: 359px; }
+.c-num { width: 30px; }
+.c-lbl { width: 160px; }
+.c-val { width: auto; }
 
-.sub-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.sub-table td {
-    padding-bottom: 3px;
-}
-
-.s-lbl { width: 130px; color: #333; }
-.s-tik { width: 15px; text-align: center; }
-
-/* UTIL */
-.cert-bold { font-weight: bold; }
-.cert-upper { text-transform: uppercase; }
-.cert-mono { font-family: 'Courier New', monospace; letter-spacing: 1px; }
-.cert-blue { color: #000080; }
-
-/* DISCLAIMER */
-.cert-disclaimer {
-    margin-top: 35px;
-    padding-top: 15px;
-    border-top: 1px solid #cccccc;
-    text-align: justify;
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-/* =========================================
-   E. QR CODE
-   ========================================= */
+/* ================================
+   QR CODE
+================================ */
 .cert-barcode-box {
     position: absolute;
     bottom: 120px;
     left: 110px;
     text-align: center;
-    z-index: 20;
 }
 
 #qrcode {
-    border: 2px solid #b8860b;
-    padding: 4px;
-    background-color: #ffffff;
     width: 76px;
     height: 76px;
-    margin-bottom: 5px;
+    padding: 4px;
+    border: 2px solid #b8860b;
+    background: #fff;
 }
 
 .cert-verify-text {
-    font-family: Arial, sans-serif;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: bold;
     color: #b8860b;
-    letter-spacing: 1px;
 }
 
-/* =========================================
-   F. TANDA TANGAN
-   ========================================= */
+/* ================================
+   TTD
+================================ */
 .cert-ttd-box {
     position: absolute;
     bottom: 120px;
     right: 110px;
-    width: 250px;
     text-align: center;
-    z-index: 20;
 }
 
-.ttd-kota {
-    font-size: 14px;
-    margin-bottom: 70px;
-}
 .ttd-jabatan {
-    font-size: 14px;
     font-weight: bold;
     text-decoration: underline;
+    margin-top: 10px;
 }
 .ttd-nama {
     font-size: 12px;
 }
 
-/* =========================================
-   G. STEMPEL
-   ========================================= */
+/* ================================
+   STEMPEL
+================================ */
 .cert-stempel {
     position: absolute;
-    bottom: 120px;
-    right: 160px;
+    bottom: 110px;
+    right: 150px;
     width: 140px;
-    height: 140px;
-
     opacity: 0.85;
     transform: rotate(-12deg);
-
-    z-index: 15;
-    pointer-events: none;
     mix-blend-mode: multiply;
 }
 
-/* =========================================
-   H. PREVIEW FIX (ANTI KEPOTONG)
-   ========================================= */
-#preview-wrapper {
-    max-height: 100vh;
-    overflow: auto;
-    padding: 20px;
-}
-
-/* center biar rapi */
-#preview-wrapper > div {
-    display: flex;
-    justify-content: center;
+/* ================================
+   ANTI HTML2CANVAS BUG
+================================ */
+.cert-paper,
+.cert-paper * {
+    transform: none !important;
+    backface-visibility: hidden;
 }
