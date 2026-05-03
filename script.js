@@ -108,43 +108,58 @@ function closePreview() {
 }
 
 // ==========================================
-// 5. ENGINE EKSPOR (ANTI BLANK & FORMAT PNG)
+// 5. ENGINE EKSPOR (ANTI BLANK & ANTI TEKS NUMPUK)
 // ==========================================
 
 async function captureCanvas() {
     window.scrollTo(0, 0); 
     const modal = document.getElementById('preview-modal');
-    const isHidden = window.getComputedStyle(modal).display === 'none';
-
-    // Trik Ninja: Buka modal diam-diam di luar layar supaya ukurannya bisa dibaca sistem
-    if (isHidden) {
-        modal.style.display = 'block';
-        modal.style.position = 'fixed';
-        modal.style.left = '-9999px'; 
-    }
-
+    const wrapper = document.querySelector('.preview-wrapper');
     const element = document.getElementById('certificate-canvas');
-    
+
+    // Simpan posisi asli biar bisa dibalikin nanti
+    const oldDisplay = modal.style.display;
+    const oldTransform = wrapper.style.transform;
+    const oldOpacity = modal.style.opacity;
+
+    // Tampilkan ukuran 1:1, tapi kasih opacity 0.01 biar gak kedip jelas di layar lu
+    modal.style.display = 'block';
+    modal.style.opacity = '0.01'; 
+    wrapper.style.transform = 'scale(1)'; 
+
+    // WAJIB: Kasih waktu browser 300ms buat nyiapin rendering pikselnya (Solusi layar blank)
+    await new Promise(r => setTimeout(r, 300));
+
     try {
         const canvas = await html2canvas(element, { 
-            scale: 2, 
+            scale: 2, // Resolusi tinggi
             useCORS: true,
             backgroundColor: "#ffffff",
             logging: false,
             width: 794, 
             height: 1123, 
+            windowWidth: 794,
+            windowHeight: 1123,
             onclone: (clonedDoc) => {
-                const clonedElement = clonedDoc.getElementById('certificate-canvas');
-                clonedElement.style.transform = 'none'; 
+                // SOLUSI TEKS KESURUPAN/NUMPUK: Matikan CSS yang bikin bug html2canvas
+                const allElements = clonedDoc.querySelectorAll('*');
+                allElements.forEach(el => {
+                    const style = window.getComputedStyle(el);
+                    if (style.letterSpacing !== 'normal') {
+                        el.style.letterSpacing = 'normal';
+                    }
+                    if (style.textAlign === 'justify') {
+                        el.style.textAlign = 'left';
+                    }
+                });
             }
         });
         return canvas;
     } finally {
-        // Balikin kondisi modal ke semula (tutup lagi)
-        if (isHidden) {
-            modal.style.display = 'none';
-            modal.style.left = '0';
-        }
+        // Balikin kondisi UI kaya semula
+        modal.style.display = oldDisplay;
+        modal.style.opacity = oldOpacity || '1';
+        wrapper.style.transform = oldTransform;
     }
 }
 
@@ -155,11 +170,10 @@ function downloadImage() {
     btn.disabled = true;
 
     captureCanvas().then(canvas => {
-        // Ekspor menjadi PNG
         const imgData = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         const fileName = document.getElementById('input-judul').value.replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
-        link.download = `Sertifikat_${fileName}.png`; // Format file diganti jadi .png
+        link.download = `Sertifikat_${fileName}.png`;
         link.href = imgData;
         link.click();
         
@@ -182,7 +196,6 @@ function downloadPDF() {
     const { jsPDF } = window.jspdf;
     
     captureCanvas().then(canvas => {
-        // Tetap pakai kompresi JPEG di dalam dokumen PDF agar ringan dikirim
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
         const pdf = new jsPDF('p', 'px', [794, 1123]);
         pdf.addImage(imgData, 'JPEG', 0, 0, 794, 1123);
