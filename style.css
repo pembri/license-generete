@@ -1,186 +1,221 @@
 /* =========================================
-   1. UI PANEL INPUT (DARK MODE)
+   A. INPUT UI (AMAN)
    ========================================= */
 .ui-input {
     width: 100%;
-    background-color: #262626; /* neutral-800 */
+    background-color: #374151;
     color: #ffffff;
-    border: 1px solid #404040;
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-size: 14px;
-    transition: all 0.3s ease;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.25rem;
+    border: none;
 }
-
 .ui-input:focus {
     outline: none;
-    border-color: #ca8a04; /* yellow-600 */
-    background-color: #2d2d2d;
-    box-shadow: 0 0 0 3px rgba(202, 138, 4, 0.15);
+    box-shadow: 0 0 0 2px #ca8a04;
 }
 
 /* =========================================
-   2. SISTEM MODAL & SCALING PREVIEW
+   B. FIX GLOBAL RENDER (ANTI BUG)
    ========================================= */
-#preview-modal {
-    scrollbar-width: thin;
-    scrollbar-color: #4b5563 transparent;
+* {
+    box-sizing: border-box;
 }
 
-/* Mengatur agar sertifikat mengecil di layar kecil tapi tetap tajam */
+.cert-paper * {
+    transform: none !important; /* 🔥 MATIIN efek ghost dari parent */
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* =========================================
+   C. KERTAS SERTIFIKAT (A4 FIX)
+   ========================================= */
 .cert-paper {
     position: relative;
-    width: 794px;  /* Lebar A4 Standar */
-    height: 1123px; /* Tinggi A4 Standar */
-    background-color: #ffffff;
+    width: 794px;
+    height: 1123px;
+
     background-image: url('assets/bingkai.png');
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center;
+    background-color: #ffffff;
+
     color: #000000;
     font-family: 'Times New Roman', Times, serif;
+
     overflow: hidden;
-    flex-shrink: 0;
-    box-sizing: border-box;
-    /* CSS transform akan diatur dinamis via script untuk preview, 
-       tapi saat download akan di-reset ke scale(1) */
+    z-index: 1;
+
+    /* 🔥 penting biar html2canvas stabil */
+    image-rendering: optimizeQuality;
 }
 
 /* =========================================
-   3. KONTEN DALAM SERTIFIKAT (PRESISI)
+   D. AREA KONTEN
    ========================================= */
 .cert-content {
-    padding: 110px 85px; /* Jarak aman dari bingkai */
-    line-height: 1.5;
+    position: absolute;
+    top: 130px;
+    left: 110px;
+    width: 574px;
+    height: 800px;
+    z-index: 10;
 }
 
+/* HEADER */
 .cert-header {
     text-align: center;
-    margin-bottom: 45px;
+    margin-bottom: 25px;
 }
-
 .cert-header h2 {
-    font-size: 17px;
-    margin: 0;
-    letter-spacing: 2.5px;
-    font-weight: normal;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
 }
-
 .cert-header h1 {
-    font-size: 28px;
+    font-size: 20px;
     font-weight: bold;
     text-decoration: underline;
-    margin: 12px 0 0 0;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
 }
 
+/* PARAGRAF */
 .cert-preamble {
     text-align: justify;
-    font-size: 15px;
-    margin-bottom: 35px;
-    color: #1a1a1a;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 25px;
 }
 
-/* Tabel Data */
+/* TABEL */
 .cert-table {
     width: 100%;
-    font-size: 15px;
     border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.5;
 }
-
 .cert-table td {
+    padding-bottom: 8px;
     vertical-align: top;
-    padding: 7px 0;
 }
 
 .c-num { width: 30px; font-weight: bold; }
 .c-lbl { width: 170px; }
-.c-tik { width: 15px; }
+.c-tik { width: 15px; text-align: center; }
+.c-val { width: 359px; }
 
-/* Sub-tabel untuk detail Pencipta & Label */
-.sub-table { width: 100%; }
-.sub-table td { padding: 2px 0; }
-.s-lbl { width: 125px; font-style: italic; color: #444; }
-.s-tik { width: 15px; }
+.sub-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.sub-table td {
+    padding-bottom: 3px;
+}
 
-/* Utility */
+.s-lbl { width: 130px; color: #333; }
+.s-tik { width: 15px; text-align: center; }
+
+/* UTIL */
 .cert-bold { font-weight: bold; }
 .cert-upper { text-transform: uppercase; }
-.cert-mono { font-family: 'Courier New', Courier, monospace; letter-spacing: -0.5px; }
-.cert-blue { color: #003366; }
+.cert-mono { font-family: 'Courier New', monospace; letter-spacing: 1px; }
+.cert-blue { color: #000080; }
 
+/* DISCLAIMER */
 .cert-disclaimer {
-    margin-top: 45px;
-    padding-top: 20px;
-    border-top: 1px solid #999;
-    font-size: 12.5px;
+    margin-top: 35px;
+    padding-top: 15px;
+    border-top: 1px solid #cccccc;
     text-align: justify;
-    font-style: italic;
-    color: #333;
-    line-height: 1.6;
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 /* =========================================
-   4. FOOTER (QR & TANDA TANGAN)
+   E. QR CODE
    ========================================= */
-
-/* Barcode / QR Code */
 .cert-barcode-box {
     position: absolute;
-    bottom: 140px;
-    left: 100px;
+    bottom: 120px;
+    left: 110px;
     text-align: center;
-    z-index: 10;
+    z-index: 20;
 }
 
 #qrcode {
-    background: #ffffff;
-    padding: 6px;
-    border: 1px solid #dddddd;
-    display: inline-block;
-}
-
-#qrcode img {
-    display: block; /* Mencegah margin aneh pada barcode */
+    border: 2px solid #b8860b;
+    padding: 4px;
+    background-color: #ffffff;
+    width: 76px;
+    height: 76px;
+    margin-bottom: 5px;
 }
 
 .cert-verify-text {
-    font-size: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
     font-weight: bold;
-    color: #555;
-    margin-top: 8px;
-    letter-spacing: 1.5px;
+    color: #b8860b;
+    letter-spacing: 1px;
 }
 
-/* Area Tanda Tangan */
+/* =========================================
+   F. TANDA TANGAN
+   ========================================= */
 .cert-ttd-box {
     position: absolute;
-    bottom: 140px;
-    right: 100px;
-    width: 260px;
+    bottom: 120px;
+    right: 110px;
+    width: 250px;
     text-align: center;
-    z-index: 10;
+    z-index: 20;
 }
 
-.ttd-kota { margin-bottom: 5px; font-size: 15px; }
-.ttd-jabatan { font-weight: bold; font-size: 14px; margin-bottom: 75px; }
-.ttd-nama { font-weight: bold; font-size: 15px; text-decoration: underline; text-transform: uppercase; }
+.ttd-kota {
+    font-size: 14px;
+    margin-bottom: 70px;
+}
+.ttd-jabatan {
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: underline;
+}
+.ttd-nama {
+    font-size: 12px;
+}
 
-/* Stempel (Overlay Efek Blending) */
+/* =========================================
+   G. STEMPEL
+   ========================================= */
 .cert-stempel {
     position: absolute;
-    bottom: 135px;
-    right: 175px;
-    width: 145px;
-    opacity: 0.9;
-    z-index: 20;
+    bottom: 120px;
+    right: 160px;
+    width: 140px;
+    height: 140px;
+
+    opacity: 0.85;
+    transform: rotate(-12deg);
+
+    z-index: 15;
     pointer-events: none;
-    /* Teknik Blending agar warna stempel bercampur dengan teks di bawahnya */
     mix-blend-mode: multiply;
 }
 
-/* Perbaikan untuk elemen transparan saat render PNG */
-canvas {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
+/* =========================================
+   H. PREVIEW FIX (ANTI KEPOTONG)
+   ========================================= */
+#preview-wrapper {
+    max-height: 100vh;
+    overflow: auto;
+    padding: 20px;
+}
+
+/* center biar rapi */
+#preview-wrapper > div {
+    display: flex;
+    justify-content: center;
 }
