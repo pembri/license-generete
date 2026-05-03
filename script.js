@@ -1,161 +1,147 @@
 const SECURITY_PIN = "Anjing526";
 
-let qrCodeObj = null;
-let currentID = null;
+let qrCode = null;
+let fixedID = null;
 
 // ==========================
 // LOGIN
 // ==========================
 function checkPassword() {
-    const input = document.getElementById('password-input').value;
+    const input = document.getElementById("password-input").value;
+
     if (input === SECURITY_PIN) {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('main-app').classList.remove('hidden');
-        document.getElementById('main-app').classList.add('flex');
-        initGenerator();
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("main-app").classList.remove("hidden");
+        document.getElementById("main-app").classList.add("flex");
+        init();
     } else {
-        document.getElementById('login-error').classList.remove('hidden');
+        document.getElementById("login-error").classList.remove("hidden");
     }
 }
 
-document.getElementById('password-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') checkPassword();
+document.getElementById("password-input")
+.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") checkPassword();
 });
 
 // ==========================
 // HELPER
 // ==========================
-function formatDate(dateString) {
-    if (!dateString) return ".......................................";
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('id-ID', options);
+function formatDate(date) {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("id-ID", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+    });
 }
 
-function generateUniqueID() {
-    const datePart = new Date().toISOString().slice(2, 7).replace('-', '');
-    const randomPart = Math.floor(1000 + Math.random() * 9000);
-    return `SRM-${datePart}-${randomPart}`;
+function generateID() {
+    const d = new Date();
+    return "SRM-" + d.getFullYear().toString().slice(2) +
+        (d.getMonth()+1) + "-" +
+        Math.floor(1000 + Math.random()*9000);
 }
 
 // ==========================
 // UPDATE PREVIEW
 // ==========================
 function updatePreview() {
-    const data = {
-        pencipta: document.getElementById('input-pencipta').value || ".......................................",
-        pemegang: document.getElementById('input-pemegang').value || "SAI Roots Music",
-        alamat: document.getElementById('input-alamat').value || ".......................................",
-        judul: document.getElementById('input-judul').value || ".......................................",
-        album: document.getElementById('input-album').value || "",
-        tanggalOri: document.getElementById('input-tanggal').value
-    };
 
-    // ID hanya dibuat sekali
-    if (!currentID) currentID = generateUniqueID();
+    if (!fixedID) fixedID = generateID();
 
-    const tanggalFormat = formatDate(data.tanggalOri);
+    const pencipta = document.getElementById("input-pencipta").value || "-";
+    const pemegang = document.getElementById("input-pemegang").value || "SAI Roots Music";
+    const judul = document.getElementById("input-judul").value || "-";
+    const album = document.getElementById("input-album").value || "-";
+    const tanggal = formatDate(document.getElementById("input-tanggal").value);
 
-    // ======================
-    // UPDATE TEXT
-    // ======================
-    document.getElementById('tampil-pencipta').innerText = data.pencipta;
-    document.getElementById('tampil-pemegang').innerText = data.pemegang;
-    document.getElementById('tampil-alamat').innerText = data.alamat;
-    document.getElementById('tampil-judul').innerText = data.judul;
-    document.getElementById('tampil-tanggal').innerText = tanggalFormat;
-    document.getElementById('tampil-ttd-tanggal').innerText =
-        tanggalFormat !== "......................................." ? tanggalFormat : "........................";
-    document.getElementById('tampil-nomor').innerText = currentID;
+    document.getElementById("tampil-pencipta").innerText = pencipta;
+    document.getElementById("tampil-pemegang").innerText = pemegang;
+    document.getElementById("tampil-judul").innerText = judul;
+    document.getElementById("tampil-album").innerText = album.trim() === "" ? "-" : album;
+    document.getElementById("tampil-tanggal").innerText = tanggal;
+    document.getElementById("tampil-ttd-tanggal").innerText = tanggal;
+    document.getElementById("tampil-nomor").innerText = fixedID;
 
-    document.getElementById('tampil-album').innerText =
-        (!data.album || data.album.trim() === "") ? "- (Single)" : data.album;
+    // QR
+    const qrText = `NO: ${fixedID}
+PENCIPTA: ${pencipta}
+JUDUL: ${judul}`;
 
-    // ======================
-    // QR CODE (ANTI GLITCH)
-    // ======================
-    const qrText = `NO: ${currentID}
-PENCIPTA: ${data.pencipta}
-HAK CIPTA: ${data.pemegang}
-JUDUL: ${data.judul}
-ALBUM: ${data.album || 'Single'}
-TANGGAL: ${tanggalFormat}`;
+    const qrBox = document.getElementById("qrcode");
+    qrBox.innerHTML = "";
 
-    const qrContainer = document.getElementById('qrcode');
-
-    // Hapus isi lama TANPA numpuk
-    qrContainer.innerHTML = "";
-
-    qrCodeObj = new QRCode(qrContainer, {
+    qrCode = new QRCode(qrBox, {
         text: qrText,
         width: 68,
-        height: 68,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.M
+        height: 68
     });
 }
 
 // ==========================
 // INIT
 // ==========================
-function initGenerator() {
-    const inputs = document.querySelectorAll('#cert-form input');
-    inputs.forEach(input => input.addEventListener('input', updatePreview));
+function init() {
+    document.querySelectorAll("#cert-form input")
+        .forEach(i => i.addEventListener("input", updatePreview));
 
     updatePreview();
 }
 
 // ==========================
-// EXPORT IMAGE
+// EXPORT ENGINE (ANTI ERROR)
+// ==========================
+function renderCanvas(callback) {
+
+    const el = document.getElementById("certificate-canvas");
+
+    // clone biar aman
+    const clone = el.cloneNode(true);
+
+    clone.style.position = "fixed";
+    clone.style.top = "0";
+    clone.style.left = "0";
+    clone.style.width = "794px";
+    clone.style.height = "1123px";
+    clone.style.background = "#fff";
+    clone.style.zIndex = "9999";
+
+    document.body.appendChild(clone);
+
+    html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+    }).then(canvas => {
+        document.body.removeChild(clone);
+        callback(canvas);
+    });
+}
+
+// ==========================
+// JPG
 // ==========================
 function downloadImage() {
-    window.scrollTo(0, 0);
-
-    const element = document.getElementById('certificate-canvas');
-
-    html2canvas(element, {
-        scale: 3, // 🔥 lebih tajam
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        width: 794,
-        height: 1123,
-        logging: false
-    }).then(canvas => {
-        const imgData = canvas.toDataURL('image/jpeg', 1.0);
-
-        const link = document.createElement('a');
-        const fileName = document.getElementById('input-judul').value.replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
-
-        link.download = `Sertifikat_${fileName}.jpg`;
-        link.href = imgData;
+    renderCanvas((canvas) => {
+        const link = document.createElement("a");
+        link.download = "sertifikat.jpg";
+        link.href = canvas.toDataURL("image/jpeg", 1.0);
         link.click();
     });
 }
 
 // ==========================
-// EXPORT PDF
+// PDF
 // ==========================
 function downloadPDF() {
-    window.scrollTo(0, 0);
-
     const { jsPDF } = window.jspdf;
-    const element = document.getElementById('certificate-canvas');
 
-    html2canvas(element, {
-        scale: 3,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        width: 794,
-        height: 1123,
-        logging: false
-    }).then(canvas => {
-        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+    renderCanvas((canvas) => {
+        const img = canvas.toDataURL("image/jpeg", 1.0);
 
-        const pdf = new jsPDF('p', 'px', [794, 1123]);
-        pdf.addImage(imgData, 'JPEG', 0, 0, 794, 1123);
-
-        const fileName = document.getElementById('input-judul').value.replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
-
-        pdf.save(`Lisensi_${fileName}.pdf`);
+        const pdf = new jsPDF("p", "mm", "a4");
+        pdf.addImage(img, "JPEG", 0, 0, 210, 297);
+        pdf.save("sertifikat.pdf");
     });
 }
