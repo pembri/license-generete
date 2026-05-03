@@ -1,163 +1,179 @@
 /* =========================================
-   A. Tampilan Panel Input (Tailwind-like)
+   A. Tampilan UI Panel Input (Dark Mode)
    ========================================= */
 .ui-input {
     width: 100%;
-    background-color: #374151; /* neutral-700 */
+    background-color: #262626; /* neutral-800 */
     color: #ffffff;
-    border-radius: 0.375rem; /* rounded */
-    padding: 0.5rem 0.75rem; /* px-3 py-2 */
-    margin-top: 0.25rem; /* mt-1 */
+    border: 1px solid #404040;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
 }
+
 .ui-input:focus {
     outline: none;
-    ring: 2px solid #ca8a04; /* yellow-600 */
+    border-color: #ca8a04; /* yellow-600 */
+    box-shadow: 0 0 0 2px rgba(202, 138, 4, 0.2);
 }
 
 /* =========================================
-   B. Tampilan Kertas Sertifikat (Presisi A4)
+   B. Struktur Kertas Sertifikat (A4 Presisi)
    ========================================= */
 
-/* Kontainer Utama Kertas: Menggunakan Gambar Bingkai Sebagai Latar */
 .cert-paper {
     position: relative;
-    width: 794px; /* A4 Pixel 96DPI */
-    height: 1123px; /* A4 Pixel 96DPI */
-    
-    /* FIX TERBESAR: Bingkai sebagai background CSS */
+    width: 794px;  /* Lebar A4 96 DPI */
+    height: 1123px; /* Tinggi A4 96 DPI */
+    background-color: #ffffff;
     background-image: url('assets/bingkai.png');
-    background-size: 100% 100%; /* Paksa bingkai penuh kertas */
+    background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center;
-    background-color: #ffffff;
-
     color: #000000;
     font-family: 'Times New Roman', Times, serif;
     overflow: hidden;
     box-sizing: border-box;
-    z-index: 1;
+    flex-shrink: 0; /* Mencegah penciutan otomatis */
 }
 
-/* Area Konten Teks: Margin Aman Dikunci Pixel Kaku */
+/* Scaling Pratinjau agar tidak kepotong di layar */
+#preview-modal .cert-paper {
+    transform: scale(0.45); /* Ukuran default untuk layar kecil */
+    transform-origin: top center;
+}
+
+@media (min-width: 768px) {
+    #preview-modal .cert-paper {
+        transform: scale(0.65);
+    }
+}
+
+@media (min-width: 1024px) {
+    #preview-modal .cert-paper {
+        transform: scale(0.85);
+    }
+}
+
+/* =========================================
+   C. Konten Dalam Sertifikat
+   ========================================= */
+
 .cert-content {
-    position: absolute;
-    top: 130px;    /* Tarik dari tepi atas kertas */
-    left: 110px;   /* Tarik dari tepi kiri kertas */
-    width: 574px;  /* Lebar murni (794 - 110 - 110) */
-    height: 800px; /* Batas tinggi konten sebelum nabrak footer */
-    z-index: 10;
+    padding: 120px 90px; /* Margin konten dari tepi bingkai */
+    line-height: 1.4;
 }
 
-/* Header */
-.cert-header { text-align: center; margin-bottom: 25px; }
-.cert-header h2 { font-size: 16px; font-weight: bold; letter-spacing: 1px; margin: 0 0 5px 0; }
-.cert-header h1 { font-size: 20px; font-weight: bold; text-decoration: underline; letter-spacing: 2px; margin: 0; }
+.cert-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
 
-/* Preamble */
-.cert-preamble { text-align: justify; font-size: 14px; line-height: 1.5; margin-bottom: 25px; }
+.cert-header h2 {
+    font-size: 18px;
+    margin: 0;
+    letter-spacing: 2px;
+}
 
-/* Tabel Data: Struktur Kaku */
-.cert-table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.5; }
-.cert-table td { padding-bottom: 8px; vertical-align: top; }
+.cert-header h1 {
+    font-size: 26px;
+    font-weight: bold;
+    text-decoration: underline;
+    margin: 10px 0 0 0;
+}
 
-/* Lebar Kolom Pixel Mutlak */
-.c-num { width: 30px; font-weight: bold; }
-.c-lbl { width: 170px; }
-.c-tik { width: 15px; text-align: center; }
-.c-val { width: 359px; }
+.cert-preamble {
+    text-align: justify;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
 
-/* Sub Tabel */
-.sub-table { width: 100%; border-collapse: collapse; }
-.sub-table td { padding-bottom: 3px; vertical-align: top; }
-.s-lbl { width: 130px; color: #333; }
-.s-tik { width: 15px; text-align: center; }
+/* Tabel Data Sertifikat */
+.cert-table {
+    width: 100%;
+    font-size: 14px;
+    border-collapse: collapse;
+}
 
-/* Utility */
+.cert-table td {
+    vertical-align: top;
+    padding: 6px 0;
+}
+
+.c-num { width: 30px; }
+.c-lbl { width: 160px; }
+.c-tik { width: 15px; }
+
+/* Sub-tabel untuk detail Pencipta/Label */
+.sub-table { width: 100%; }
+.sub-table td { padding: 2px 0; }
+.s-lbl { width: 120px; font-style: italic; }
+.s-tik { width: 15px; }
+
+/* Styling Khusus Teks */
 .cert-bold { font-weight: bold; }
 .cert-upper { text-transform: uppercase; }
-.cert-mono { font-family: 'Courier New', Courier, monospace; letter-spacing: 1px; }
-.cert-blue { color: #000080; }
+.cert-mono { font-family: 'Courier New', Courier, monospace; }
+.cert-blue { color: #003366; }
 
-/* Disclaimer */
-.cert-disclaimer { margin-top: 35px; padding-top: 15px; border-top: 1px solid #cccccc; text-align: justify; font-size: 12px; line-height: 1.5; color: #222; }
+.cert-disclaimer {
+    margin-top: 40px;
+    padding-top: 15px;
+    border-top: 1px solid #000;
+    font-size: 12px;
+    text-align: justify;
+    font-style: italic;
+    color: #333;
+}
 
 /* =========================================
-   C. Area Footer (QR & TTD) Dikunci Pixel
+   D. Footer (QR & Tanda Tangan)
    ========================================= */
 
-/* Barcode */
 .cert-barcode-box {
     position: absolute;
-    bottom: 120px; /* Dari bawah kertas */
-    left: 110px;   /* Sejajar teks */
-    z-index: 20;
+    bottom: 150px;
+    left: 100px;
     text-align: center;
 }
-#qrcode {
-    border: 2px solid #b8860b;
-    padding: 4px;
-    background-color: #ffffff;
-    width: 76px; /* 68px qr + 8px padding */
-    height: 76px;
-    margin: 0 auto 5px auto;
-}
-.cert-verify-text { font-family: Arial, sans-serif; font-size: 9px; font-weight: bold; color: #b8860b; letter-spacing: 1px; }
 
-/* Tanda Tangan */
+#qrcode {
+    background: #fff;
+    padding: 5px;
+    border: 1px solid #ccc;
+    display: inline-block;
+}
+
+.cert-verify-text {
+    font-size: 10px;
+    font-weight: bold;
+    color: #666;
+    margin-top: 5px;
+    letter-spacing: 1px;
+}
+
 .cert-ttd-box {
     position: absolute;
-    bottom: 120px; /* Dari bawah kertas */
-    right: 110px;  /* Sejajar teks */
+    bottom: 150px;
+    right: 100px;
     width: 250px;
     text-align: center;
-    z-index: 20;
 }
-.ttd-kota { font-size: 14px; margin-bottom: 70px; /* Ruang kosong TTD */ }
-.ttd-jabatan { font-size: 14px; font-weight: bold; text-decoration: underline; margin-bottom: 2px; }
-.ttd-nama { font-size: 12px; }
 
-/* Stempel (Timpa TTD) */
+.ttd-kota { margin-bottom: 5px; font-size: 14px; }
+.ttd-jabatan { font-weight: bold; font-size: 14px; margin-bottom: 60px; }
+.ttd-nama { font-weight: bold; font-size: 14px; text-decoration: underline; }
+
+/* Stempel (Overlay) */
 .cert-stempel {
     position: absolute;
-    bottom: 120px;
-    right: 160px;
-    width: 140px;
-    height: 140px;
-    z-index: 15; /* Di bawah teks TTD */
-    opacity: 0.90;
-    transform: rotate(-12deg);
+    bottom: 140px;
+    right: 170px;
+    width: 130px;
+    opacity: 0.85;
+    z-index: 30;
     pointer-events: none;
-    /* mix-blend-mode: multiply; -- DIHAPUS: menyebabkan berbayang di html2canvas */
-}
-
-/* =========================================
-   D. Preview Modal Scale Wrapper
-   ========================================= */
-.preview-scale-wrapper {
-    transform-origin: top center;
-    transform: scale(0.5);
-    width: 794px;
-    /* Kompensasi tinggi agar modal tidak terlalu tinggi */
-    margin-bottom: calc((1123px * 0.5) - 1123px);
-}
-
-@media (min-width: 640px) {
-    .preview-scale-wrapper {
-        transform: scale(0.65);
-        margin-bottom: calc((1123px * 0.65) - 1123px);
-    }
-}
-
-@media (min-width: 900px) {
-    .preview-scale-wrapper {
-        transform: scale(0.85);
-        margin-bottom: calc((1123px * 0.85) - 1123px);
-    }
-}
-
-@media (min-width: 1100px) {
-    .preview-scale-wrapper {
-        transform: scale(1);
-        margin-bottom: 0;
-    }
+    /* Efek blending agar menyatu dengan kertas */
+    mix-blend-mode: multiply;
 }
