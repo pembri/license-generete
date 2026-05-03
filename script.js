@@ -40,6 +40,12 @@ function generateUniqueID(judul) {
 // 3. ENGINE GENERATOR & QR CODE FIX
 // ==========================================
 function initGenerator() {
+    // FITUR BARU: Otomatis isi kolom tanggal dengan tanggal hari ini saat web dibuka
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    document.getElementById('input-tanggal').value = todayStr;
+    document.getElementById('input-rilis').value = todayStr;
+
     // QR Code Resolusi HD (256x256) dengan Level L agar mudah di-scan
     qrCodeObj = new QRCode(document.getElementById("qrcode"), {
         text: "SAI ROOTS MUSIC VERIFIED",
@@ -52,6 +58,8 @@ function initGenerator() {
 
     const inputs = document.querySelectorAll('form input');
     inputs.forEach(input => input.addEventListener('input', updatePreview));
+    
+    // Panggil updatePreview sekali di awal biar tanggal otomatisnya langsung muncul di kertas
     updatePreview(); 
 }
 
@@ -72,6 +80,9 @@ function updatePreview() {
     const tanggalRilisFormat = formatDate(data.rilisOri);
     const nomorUnik = generateUniqueID(data.judul);
 
+    // Dapatkan format tanggal hari ini sebagai cadangan mutlak untuk area Tanda Tangan
+    const fallbackToday = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+
     // Tulis ke Kertas Sertifikat
     document.getElementById('tampil-pencipta').innerText = data.pencipta;
     document.getElementById('tampil-pemegang').innerText = data.pemegang;
@@ -81,11 +92,14 @@ function updatePreview() {
     document.getElementById('tampil-rilis').innerText = tanggalRilisFormat;
     document.getElementById('tampil-isrc').innerText = data.isrc;
     document.getElementById('tampil-upc').innerText = data.upc;
-    document.getElementById('tampil-ttd-tanggal').innerText = tanggalPembuatanFormat !== "......................................." ? tanggalPembuatanFormat : "........................";
+    
+    // FITUR BARU: Area Tanda Tangan pasti terisi tanggal (Prioritas: Input form -> Tanggal Hari Ini)
+    document.getElementById('tampil-ttd-tanggal').innerText = data.tanggalOri ? tanggalPembuatanFormat : fallbackToday;
+    
     document.getElementById('tampil-nomor').innerText = nomorUnik;
     document.getElementById('tampil-album').innerText = data.album.trim() === "" ? "- (Single)" : data.album;
 
-    // Update QR Code Text dengan Data Baru (ISRC, UPC, Rilis)
+    // Update QR Code Text
     const qrText = `NO: ${nomorUnik}\nPENCIPTA: ${data.pencipta}\nHAK CIPTA: ${data.pemegang}\nJUDUL: ${data.judul}\nALBUM: ${data.album || 'Single'}\nRILIS: ${tanggalRilisFormat}\nISRC: ${data.isrc}\nUPC: ${data.upc}`;
     if (qrCodeObj) {
         qrCodeObj.makeCode(qrText);
@@ -131,12 +145,10 @@ async function captureCanvas() {
     const oldTransform = wrapper.style.transform;
     const oldOpacity = modal.style.opacity;
 
-    // Tampilkan 1:1 transparan sebentar biar sistem bisa baca ukuran asli kertas
     modal.style.display = 'block';
     modal.style.opacity = '0.01'; 
     wrapper.style.transform = 'scale(1)'; 
 
-    // Kasih waktu loading 300ms buat rendering piksel
     await new Promise(r => setTimeout(r, 300));
 
     try {
@@ -150,7 +162,6 @@ async function captureCanvas() {
             windowWidth: 794,
             windowHeight: 1123,
             onclone: (clonedDoc) => {
-                // Matikan CSS spasi yang bikin html2canvas error (teks numpuk)
                 const allElements = clonedDoc.querySelectorAll('*');
                 allElements.forEach(el => {
                     const style = window.getComputedStyle(el);
