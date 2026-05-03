@@ -14,9 +14,7 @@ function checkPassword() {
     }
 }
 
-document.getElementById('password-input').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') checkPassword();
-});
+document.getElementById('password-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });
 
 // Helper
 function formatDate(dateString) {
@@ -34,33 +32,36 @@ function generateUniqueID(judul) {
 
 // Engine Update
 function updatePreview() {
-    const pencipta = document.getElementById('input-pencipta').value || ".......................................";
-    const pemegang = document.getElementById('input-pemegang').value || "SAI Roots Music";
-    const alamat = document.getElementById('input-alamat').value || ".......................................";
-    const judul = document.getElementById('input-judul').value || ".......................................";
-    const album = document.getElementById('input-album').value;
-    const tanggalOri = document.getElementById('input-tanggal').value;
-    const tanggalFormat = formatDate(tanggalOri);
-    const nomorUnik = generateUniqueID(judul);
+    const data = {
+        pencipta: document.getElementById('input-pencipta').value || ".......................................",
+        pemegang: document.getElementById('input-pemegang').value || "SAI Roots Music",
+        alamat: document.getElementById('input-alamat').value || ".......................................",
+        judul: document.getElementById('input-judul').value || ".......................................",
+        album: document.getElementById('input-album').value,
+        tanggalOri: document.getElementById('input-tanggal').value
+    };
+    
+    const tanggalFormat = formatDate(data.tanggalOri);
+    const nomorUnik = generateUniqueID(data.judul);
 
     // Tulis Text
-    document.getElementById('tampil-pencipta').innerText = pencipta;
-    document.getElementById('tampil-pemegang').innerText = pemegang;
-    document.getElementById('tampil-alamat').innerText = alamat;
-    document.getElementById('tampil-judul').innerText = judul;
+    document.getElementById('tampil-pencipta').innerText = data.pencipta;
+    document.getElementById('tampil-pemegang').innerText = data.pemegang;
+    document.getElementById('tampil-alamat').innerText = data.alamat;
+    document.getElementById('tampil-judul').innerText = data.judul;
     document.getElementById('tampil-tanggal').innerText = tanggalFormat;
     document.getElementById('tampil-ttd-tanggal').innerText = tanggalFormat !== "......................................." ? tanggalFormat : "........................";
     document.getElementById('tampil-nomor').innerText = nomorUnik;
-    document.getElementById('tampil-album').innerText = album.trim() === "" ? "- (Single)" : album;
+    document.getElementById('tampil-album').innerText = data.album.trim() === "" ? "- (Single)" : data.album;
 
     // Reset & Buat ulang QR Code
     document.getElementById('qrcode').innerHTML = "";
-    const qrData = `NO: ${nomorUnik}\nPENCIPTA: ${pencipta}\nHAK CIPTA: ${pemegang}\nJUDUL: ${judul}\nALBUM: ${album || 'Single'}\nTANGGAL: ${tanggalFormat}`;
+    const qrText = `NO: ${nomorUnik}\nPENCIPTA: ${data.pencipta}\nHAK CIPTA: ${data.pemegang}\nJUDUL: ${data.judul}\nALBUM: ${data.album || 'Single'}\nTANGGAL: ${tanggalFormat}`;
     
     qrCodeObj = new QRCode(document.getElementById("qrcode"), {
-        text: qrData,
-        width: 68, // Ukuran Pas Kertas
-        height: 68, // Ukuran Pas Kertas
+        text: qrText,
+        width: 68,
+        height: 68,
         colorDark : "#000000",
         colorLight : "#ffffff",
         correctLevel : QRCode.CorrectLevel.M
@@ -73,14 +74,19 @@ function initGenerator() {
     updatePreview(); 
 }
 
-// Ekspor ke Gambar JPG Resolusi Tinggi (Anti Kepotong)
+// Engine Ekspor Mutlak (Anti Kepotong)
 function downloadImage() {
-    window.scrollTo(0, 0); // Cegah bug html2canvas kepotong saat di-scroll
+    window.scrollTo(0, 0); // Cegah bug scroll kepotong
     const element = document.getElementById('certificate-canvas');
+    
+    // html2canvas menangkap kanvas berukuran asli
     html2canvas(element, { 
-        scale: 2, 
+        scale: 2, // Kualitas tinggi
         useCORS: true,
-        backgroundColor: "#ffffff"
+        backgroundColor: "#ffffff",
+        logging: false,
+        width: 794, // Paksa lebar asli
+        height: 1123 // Paksa tinggi asli
     }).then(canvas => {
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
         const link = document.createElement('a');
@@ -91,18 +97,21 @@ function downloadImage() {
     });
 }
 
-// Ekspor ke PDF (Ukuran Standar A4)
 function downloadPDF() {
-    window.scrollTo(0, 0); // Cegah bug html2canvas
+    window.scrollTo(0, 0);
     const { jsPDF } = window.jspdf;
     const element = document.getElementById('certificate-canvas');
+    
     html2canvas(element, { 
         scale: 2, 
         useCORS: true,
-        backgroundColor: "#ffffff"
+        backgroundColor: "#ffffff",
+        logging: false,
+        width: 794,
+        height: 1123
     }).then(canvas => {
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
-        const pdf = new jsPDF('p', 'px', [794, 1123]); // Paksakan ke ukuran pixel kertas
+        const pdf = new jsPDF('p', 'px', [794, 1123]);
         pdf.addImage(imgData, 'JPEG', 0, 0, 794, 1123);
         const fileName = document.getElementById('input-judul').value.replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
         pdf.save(`Lisensi_${fileName}.pdf`);
