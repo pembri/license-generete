@@ -1,171 +1,161 @@
 const SECURITY_PIN = "Anjing526";
 
-// =========================================
-// 1. SISTEM KEAMANAN
-// =========================================
+let qrCodeObj = null;
+let currentID = null;
+
+// ==========================
+// LOGIN
+// ==========================
 function checkPassword() {
     const input = document.getElementById('password-input').value;
-    const errorMsg = document.getElementById('login-error');
-    
     if (input === SECURITY_PIN) {
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('main-app').classList.remove('hidden');
         document.getElementById('main-app').classList.add('flex');
         initGenerator();
     } else {
-        errorMsg.classList.remove('hidden');
+        document.getElementById('login-error').classList.remove('hidden');
     }
 }
 
-// Support Enter Key
 document.getElementById('password-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') checkPassword();
 });
 
-// =========================================
-// 2. LOGIKA MODAL & SCALING (ANTI-POTONG)
-// =========================================
-function openPreview() {
-    updatePreview();
-    const modal = document.getElementById('preview-modal');
-    const cert = document.getElementById('certificate-canvas');
-    
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-
-    // Hitung skala otomatis agar pas di layar (Responsive Scaling)
-    const padding = 40;
-    const availableWidth = window.innerWidth - padding;
-    const certWidth = 794;
-    
-    if (availableWidth < certWidth) {
-        const scaleVal = availableWidth / certWidth;
-        cert.style.transform = `scale(${scaleVal})`;
-        cert.style.transformOrigin = 'top center';
-    } else {
-        cert.style.transform = 'scale(1)';
-    }
+// ==========================
+// HELPER
+// ==========================
+function formatDate(dateString) {
+    if (!dateString) return ".......................................";
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('id-ID', options);
 }
 
-function closePreview() {
-    document.getElementById('preview-modal').classList.add('hidden');
-    document.body.style.overflow = 'auto';
-}
-
-// =========================================
-// 3. GENERATOR DATA & QR CODE
-// =========================================
-function generateUniqueID(judul) {
-    if (!judul || judul === ".......................................") return "SRM-0000-0000";
+function generateUniqueID() {
     const datePart = new Date().toISOString().slice(2, 7).replace('-', '');
     const randomPart = Math.floor(1000 + Math.random() * 9000);
     return `SRM-${datePart}-${randomPart}`;
 }
 
+// ==========================
+// UPDATE PREVIEW
+// ==========================
 function updatePreview() {
     const data = {
         pencipta: document.getElementById('input-pencipta').value || ".......................................",
         pemegang: document.getElementById('input-pemegang').value || "SAI Roots Music",
         alamat: document.getElementById('input-alamat').value || ".......................................",
         judul: document.getElementById('input-judul').value || ".......................................",
-        album: document.getElementById('input-album').value,
-        tanggal: document.getElementById('input-tanggal').value
+        album: document.getElementById('input-album').value || "",
+        tanggalOri: document.getElementById('input-tanggal').value
     };
 
-    // Format Tanggal Indonesia
-    let tglIndo = ".......................................";
-    if (data.tanggal) {
-        tglIndo = new Date(data.tanggal).toLocaleDateString('id-ID', { 
-            year: 'numeric', month: 'long', day: 'numeric' 
-        });
-    }
+    // ID hanya dibuat sekali
+    if (!currentID) currentID = generateUniqueID();
 
-    const nomorID = generateUniqueID(data.judul);
+    const tanggalFormat = formatDate(data.tanggalOri);
 
-    // Update Elemen Sertifikat
+    // ======================
+    // UPDATE TEXT
+    // ======================
     document.getElementById('tampil-pencipta').innerText = data.pencipta;
     document.getElementById('tampil-pemegang').innerText = data.pemegang;
     document.getElementById('tampil-alamat').innerText = data.alamat;
     document.getElementById('tampil-judul').innerText = data.judul;
-    document.getElementById('tampil-tanggal').innerText = tglIndo;
-    document.getElementById('tampil-ttd-tanggal').innerText = (data.tanggal) ? tglIndo : "........................";
-    document.getElementById('tampil-nomor').innerText = nomorID;
-    document.getElementById('tampil-album').innerText = data.album.trim() === "" ? "- (Single)" : data.album;
+    document.getElementById('tampil-tanggal').innerText = tanggalFormat;
+    document.getElementById('tampil-ttd-tanggal').innerText =
+        tanggalFormat !== "......................................." ? tanggalFormat : "........................";
+    document.getElementById('tampil-nomor').innerText = currentID;
 
-    // Generate QR Code
-    const qrDiv = document.getElementById('qrcode');
-    qrDiv.innerHTML = "";
-    new QRCode(qrDiv, {
-        text: `VERIFIED: ${nomorID}\nTITLE: ${data.judul}\nBY: ${data.pencipta}\n(C) SAI ROOTS MUSIC`,
+    document.getElementById('tampil-album').innerText =
+        (!data.album || data.album.trim() === "") ? "- (Single)" : data.album;
+
+    // ======================
+    // QR CODE (ANTI GLITCH)
+    // ======================
+    const qrText = `NO: ${currentID}
+PENCIPTA: ${data.pencipta}
+HAK CIPTA: ${data.pemegang}
+JUDUL: ${data.judul}
+ALBUM: ${data.album || 'Single'}
+TANGGAL: ${tanggalFormat}`;
+
+    const qrContainer = document.getElementById('qrcode');
+
+    // Hapus isi lama TANPA numpuk
+    qrContainer.innerHTML = "";
+
+    qrCodeObj = new QRCode(qrContainer, {
+        text: qrText,
         width: 68,
         height: 68,
-        correctLevel: QRCode.CorrectLevel.H
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
     });
 }
 
+// ==========================
+// INIT
+// ==========================
 function initGenerator() {
-    // Inisialisasi awal jika diperlukan
+    const inputs = document.querySelectorAll('#cert-form input');
+    inputs.forEach(input => input.addEventListener('input', updatePreview));
+
     updatePreview();
 }
 
-// =========================================
-// 4. ENGINE EXPORT PNG HD & PDF (ANTI-AMBURADUL)
-// =========================================
+// ==========================
+// EXPORT IMAGE
+// ==========================
+function downloadImage() {
+    window.scrollTo(0, 0);
 
-async function captureHighRes() {
-    updatePreview();
-    const cert = document.getElementById('certificate-canvas');
-    const modal = document.getElementById('preview-modal');
-    
-    // Simpan status asli
-    const originalStyle = cert.style.transform;
-    const wasHidden = modal.classList.contains('hidden');
+    const element = document.getElementById('certificate-canvas');
 
-    // STEP 1: Persiapan Render Bersih
-    modal.classList.remove('hidden');
-    cert.style.transform = "scale(1)"; // Reset ke ukuran asli A4
-    cert.style.transformOrigin = "top left";
-
-    // Berikan waktu (delay) 300ms agar QR Code & Image Bingkai ter-load sempurna
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    // STEP 2: Pemotretan PNG HD
-    const canvas = await html2canvas(cert, {
-        scale: 4, // Kualitas Tinggi
+    html2canvas(element, {
+        scale: 3, // 🔥 lebih tajam
         useCORS: true,
-        allowTaint: true,
         backgroundColor: "#ffffff",
         width: 794,
         height: 1123,
-        scrollX: 0,
-        scrollY: 0
+        logging: false
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+        const link = document.createElement('a');
+        const fileName = document.getElementById('input-judul').value.replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
+
+        link.download = `Sertifikat_${fileName}.jpg`;
+        link.href = imgData;
+        link.click();
     });
-
-    // STEP 3: Kembalikan tampilan preview
-    cert.style.transform = originalStyle;
-    if (wasHidden) modal.classList.add('hidden');
-
-    return canvas;
 }
 
-async function downloadImage() {
-    const canvas = await captureHighRes();
-    const judul = document.getElementById('input-judul').value || "Sertifikat";
-    const link = document.createElement('a');
-    link.download = `SAI-ROOTS-${judul.toUpperCase().replace(/\s+/g, '-')}.png`;
-    link.href = canvas.toDataURL('image/png', 1.0);
-    link.click();
-}
+// ==========================
+// EXPORT PDF
+// ==========================
+function downloadPDF() {
+    window.scrollTo(0, 0);
 
-async function downloadPDF() {
-    const canvas = await captureHighRes();
     const { jsPDF } = window.jspdf;
-    const judul = document.getElementById('input-judul').value || "Sertifikat";
-    
-    // PDF ukuran A4 (794x1123 px ≈ 210x297 mm)
-    const pdf = new jsPDF('p', 'px', [794, 1123]);
-    const imgData = canvas.toDataURL('image/png');
-    
-    pdf.addImage(imgData, 'PNG', 0, 0, 794, 1123);
-    pdf.save(`LISENSI-SAI-ROOTS-${judul.toUpperCase().replace(/\s+/g, '-')}.pdf`);
+    const element = document.getElementById('certificate-canvas');
+
+    html2canvas(element, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        width: 794,
+        height: 1123,
+        logging: false
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+        const pdf = new jsPDF('p', 'px', [794, 1123]);
+        pdf.addImage(imgData, 'JPEG', 0, 0, 794, 1123);
+
+        const fileName = document.getElementById('input-judul').value.replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
+
+        pdf.save(`Lisensi_${fileName}.pdf`);
+    });
 }
