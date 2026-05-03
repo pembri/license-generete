@@ -1,166 +1,159 @@
-/* ================================
-   GLOBAL RESET
-================================ */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* =========================================
+   1. UI & FORM STYLES (Tailwind Override)
+   ========================================= */
+.label-txt {
+    @apply block text-xs font-bold text-yellow-600 uppercase tracking-wider mb-1;
 }
 
-/* ================================
-   INPUT UI
-================================ */
 .ui-input {
-    width: 100%;
-    background: #374151;
-    color: #fff;
-    border-radius: 6px;
-    padding: 8px 10px;
-    border: none;
-}
-.ui-input:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #ca8a04;
+    @apply w-full bg-neutral-800 border border-neutral-700 text-white px-4 py-2 rounded-lg 
+    focus:ring-2 focus:ring-yellow-600 focus:outline-none transition-all placeholder:text-neutral-600;
 }
 
-/* ================================
-   PREVIEW WRAPPER
-================================ */
-#preview-wrapper {
-    max-height: 100vh;
-    overflow: auto;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
+.btn-action {
+    @apply py-3 px-6 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2;
 }
 
-/* ================================
-   KERTAS A4 FIX
-================================ */
+/* =========================================
+   2. SERTIFIKAT CORE (PRESISI A4 - 96 DPI)
+   ========================================= */
 .cert-paper {
     position: relative;
-    width: 794px;
-    height: 1123px;
-
-    background: #fff url('assets/bingkai.png') no-repeat center;
+    width: 794px;   /* Mutlak A4 */
+    height: 1123px; /* Mutlak A4 */
+    background-color: #ffffff;
+    background-image: url('assets/bingkai.png');
     background-size: 100% 100%;
-
-    font-family: 'Times New Roman', serif;
+    background-repeat: no-repeat;
     color: #000;
-
+    font-family: 'Times New Roman', Times, serif;
     overflow: hidden;
+    box-sizing: border-box;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
 }
 
-/* ================================
-   KONTEN UTAMA
-================================ */
+/* Area Konten Teks */
 .cert-content {
     position: absolute;
-    top: 130px;
-    left: 110px;
-    width: 574px;
+    top: 140px;
+    left: 100px;
+    right: 100px;
+    z-index: 10;
 }
 
-/* HEADER */
-.cert-header {
-    text-align: center;
-    margin-bottom: 25px;
-}
-.cert-header h2 {
-    font-size: 16px;
-    font-weight: bold;
-}
-.cert-header h1 {
-    font-size: 20px;
-    font-weight: bold;
-    text-decoration: underline;
+.cert-header { text-align: center; margin-bottom: 30px; }
+.cert-header h2 { font-size: 18px; font-weight: bold; margin: 0; color: #1a1a1a; letter-spacing: 1px; }
+.cert-header h1 { 
+    font-family: 'Playfair Display', serif; 
+    font-size: 26px; 
+    font-weight: bold; 
+    text-decoration: underline; 
+    margin: 5px 0 0 0;
+    color: #000;
 }
 
-/* PARAGRAF */
-.cert-preamble {
-    text-align: justify;
-    font-size: 14px;
-    margin-bottom: 20px;
+.cert-preamble { 
+    text-align: justify; 
+    font-size: 14px; 
+    line-height: 1.6; 
+    margin-bottom: 30px; 
+    color: #333;
 }
 
-/* ================================
-   TABLE
-================================ */
-.cert-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-.cert-table td {
-    padding: 6px 0;
-    vertical-align: top;
-}
-
-.c-num { width: 30px; }
-.c-lbl { width: 160px; }
+/* Tabel Data */
+.cert-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.cert-table td { padding: 8px 0; vertical-align: top; }
+.c-num { width: 35px; font-weight: bold; }
+.c-lbl { width: 180px; }
+.c-tik { width: 20px; text-align: center; }
 .c-val { width: auto; }
 
-/* ================================
-   QR CODE
-================================ */
+.sub-table { width: 100%; }
+.sub-table td { padding: 2px 0; }
+.s-lbl { width: 120px; font-style: italic; color: #555; }
+
+/* Font Utilities */
+.cert-bold { font-weight: bold; }
+.cert-upper { text-transform: uppercase; }
+.cert-mono { font-family: 'Courier New', Courier, monospace; font-size: 16px; font-weight: bold; }
+.cert-blue { color: #002e5b; }
+
+.cert-disclaimer { 
+    margin-top: 40px; 
+    padding: 15px; 
+    border-top: 1.5px solid #000; 
+    font-size: 11px; 
+    text-align: justify; 
+    line-height: 1.4; 
+    color: #444;
+    font-style: italic;
+}
+
+/* =========================================
+   3. FOOTER (QR & TANDA TANGAN)
+   ========================================= */
 .cert-barcode-box {
     position: absolute;
-    bottom: 120px;
-    left: 110px;
+    bottom: 140px;
+    left: 100px;
     text-align: center;
 }
 
-#qrcode {
-    width: 76px;
-    height: 76px;
-    padding: 4px;
-    border: 2px solid #b8860b;
+#qrcode img {
+    border: 2px solid #000;
+    padding: 3px;
     background: #fff;
+    width: 85px !important; /* Ukuran pas buat discan */
+    height: 85px !important;
 }
 
-.cert-verify-text {
-    font-size: 10px;
-    font-weight: bold;
-    color: #b8860b;
+.cert-verify-text { 
+    font-family: 'Cinzel', serif;
+    font-size: 10px; 
+    font-weight: bold; 
+    color: #b8860b; 
+    margin-top: 8px;
+    letter-spacing: 1px;
 }
 
-/* ================================
-   TTD
-================================ */
 .cert-ttd-box {
     position: absolute;
-    bottom: 120px;
-    right: 110px;
+    bottom: 140px;
+    right: 100px;
+    width: 250px;
     text-align: center;
 }
 
-.ttd-jabatan {
-    font-weight: bold;
-    text-decoration: underline;
-    margin-top: 10px;
-}
-.ttd-nama {
-    font-size: 12px;
-}
+.ttd-kota { font-size: 15px; margin-bottom: 80px; }
+.ttd-jabatan { font-size: 15px; font-weight: bold; text-decoration: underline; }
+.ttd-nama { font-size: 13px; margin-top: 4px; font-weight: bold; }
 
-/* ================================
-   STEMPEL
-================================ */
+/* Stempel - Efek Realistis */
 .cert-stempel {
     position: absolute;
-    bottom: 110px;
-    right: 150px;
-    width: 140px;
-    opacity: 0.85;
-    transform: rotate(-12deg);
-    mix-blend-mode: multiply;
+    bottom: 135px;
+    right: 170px;
+    width: 150px;
+    height: auto;
+    z-index: 15;
+    opacity: 0.8;
+    transform: rotate(-15deg);
+    pointer-events: none;
+    mix-blend-mode: multiply; /* Biar nyatu sama kertas */
 }
 
-/* ================================
-   ANTI HTML2CANVAS BUG
-================================ */
-.cert-paper,
-.cert-paper * {
-    transform: none !important;
-    backface-visibility: hidden;
+/* =========================================
+   4. MODAL & MOBILE OPTIMIZATION
+   ========================================= */
+#preview-modal {
+    scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+#preview-modal::-webkit-scrollbar {
+    display: none; /* Hide scrollbar Chrome/Safari */
+}
+
+@media (max-width: 768px) {
+    .btn-action {
+        @apply py-4 text-base;
+    }
 }
