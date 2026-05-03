@@ -73,11 +73,30 @@ JUDUL: ${data.judul}
 ALBUM: ${data.album || 'Single'}
 TANGGAL: ${tanggalFormat}`;
 
-    qrCodeObj = new QRCode(document.getElementById("qrcode"), {
-        text: qrText,
-        width: 68,
-        height: 68
-    });
+    const qrContainer = document.getElementById("qrcode");
+qrContainer.innerHTML = "";
+
+// Buat QR sementara
+const tempQR = document.createElement("div");
+new QRCode(tempQR, {
+    text: qrText,
+    width: 128,
+    height: 128
+});
+
+// Tunggu render → ambil jadi IMG
+setTimeout(() => {
+    const canvas = tempQR.querySelector("canvas");
+    if (canvas) {
+        const img = document.createElement("img");
+        img.src = canvas.toDataURL("image/png");
+        img.style.width = "68px";
+        img.style.height = "68px";
+
+        qrContainer.innerHTML = "";
+        qrContainer.appendChild(img);
+    }
+}, 100);
 }
 
 function initGenerator() {
