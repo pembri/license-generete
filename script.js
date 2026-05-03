@@ -1,7 +1,6 @@
 // Konfigurasi Sandi
 const SECURITY_PIN = "Anjing526";
 
-// Variabel Global QR Code
 let qrCodeObj = null;
 
 // Fungsi Mengecek Sandi
@@ -11,33 +10,32 @@ function checkPassword() {
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('main-app').classList.remove('hidden');
         document.getElementById('main-app').classList.add('flex');
-        initGenerator(); // Jalankan fungsi awal
+        initGenerator();
     } else {
         document.getElementById('login-error').classList.remove('hidden');
     }
 }
 
-// Fitur enter untuk submit password
 document.getElementById('password-input').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') checkPassword();
 });
 
-// Format Tanggal Indonesia
+// Format Tanggal
 function formatDate(dateString) {
     if (!dateString) return ".......................................";
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('id-ID', options);
 }
 
-// Buat Nomor Unik (Hash) otomatis dari Timestamp & Judul
+// Buat Hash Unik
 function generateUniqueID(judul) {
-    if (!judul) return "SRM-00000000";
-    const datePart = new Date().toISOString().slice(2, 7).replace('-', ''); // ex: 2605
-    const randomPart = Math.floor(1000 + Math.random() * 9000); // 4 digit random
+    if (!judul) return "SRM-0000-0000";
+    const datePart = new Date().toISOString().slice(2, 7).replace('-', '');
+    const randomPart = Math.floor(1000 + Math.random() * 9000);
     return `SRM-${datePart}-${randomPart}`;
 }
 
-// Update UI secara Real-Time
+// Real-Time Update
 function updatePreview() {
     const pencipta = document.getElementById('input-pencipta').value || ".......................................";
     const pemegang = document.getElementById('input-pemegang').value || ".......................................";
@@ -48,10 +46,9 @@ function updatePreview() {
     const tanggalOri = document.getElementById('input-tanggal').value;
     const tanggalFormat = formatDate(tanggalOri);
     
-    // Auto Generate ID based on Title
     const nomorUnik = generateUniqueID(document.getElementById('input-judul').value);
 
-    // Tulis ke Kanvas Sertifikat
+    // Tulis ke UI Kertas
     document.getElementById('tampil-pencipta').innerText = pencipta;
     document.getElementById('tampil-pemegang').innerText = pemegang;
     document.getElementById('tampil-alamat').innerText = alamat;
@@ -62,18 +59,16 @@ function updatePreview() {
     document.getElementById('tampil-ttd-tanggal').innerText = tanggalFormat !== "......................................." ? tanggalFormat : "........................";
     document.getElementById('tampil-nomor').innerText = nomorUnik;
 
-    // Logika Album (Sembunyikan baris jika kosong)
     if (album.trim() === "") {
         document.getElementById('tampil-album').innerText = "- (Single)";
     } else {
         document.getElementById('tampil-album').innerText = album;
     }
 
-    // Generate QR Code String
-    const qrData = `NO: ${nomorUnik}\nPENCIPTA: ${pencipta}\nHAK CIPTA: ${pemegang}\nJUDUL: ${judul}\nALBUM: ${album || 'Single'}\nTANGGAL: ${tanggalFormat}\nSAI ROOTS MUSIC VERIFIED`;
+    // QR Data
+    const qrData = `NO: ${nomorUnik}\nPENCIPTA: ${pencipta}\nHAK CIPTA: ${pemegang}\nJUDUL: ${judul}\nALBUM: ${album || 'Single'}\nTANGGAL: ${tanggalFormat}`;
     
-    // Render QR Code Ulang
-    document.getElementById('qrcode').innerHTML = ""; // Bersihkan QR lama
+    document.getElementById('qrcode').innerHTML = "";
     qrCodeObj = new QRCode(document.getElementById("qrcode"), {
         text: qrData,
         width: 80,
@@ -84,20 +79,18 @@ function updatePreview() {
     });
 }
 
-// Inisialisasi Event Listener ke semua input form
 function initGenerator() {
     const inputs = document.querySelectorAll('form input');
     inputs.forEach(input => {
         input.addEventListener('input', updatePreview);
     });
-    // Panggil sekali untuk data default
     updatePreview(); 
 }
 
-// Fungsi Download sebagai Gambar PNG
+// Download PNG
 function downloadImage() {
     const canvasElement = document.getElementById('certificate-canvas');
-    html2canvas(canvasElement, { scale: 2 }).then(canvas => {
+    html2canvas(canvasElement, { scale: 2, useCORS: true }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.download = `Sertifikat_${document.getElementById('input-judul').value || 'SAI_Roots'}.png`;
@@ -106,24 +99,16 @@ function downloadImage() {
     });
 }
 
-// Fungsi Download sebagai PDF
+// Download PDF
 function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const canvasElement = document.getElementById('certificate-canvas');
-    
-    // html2canvas menangkap area DOM menjadi gambar dulu
-    html2canvas(canvasElement, { scale: 2 }).then(canvas => {
+    html2canvas(canvasElement, { scale: 2, useCORS: true }).then(canvas => {
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
-        
-        // Buat instance jsPDF kertas A4 orientasi Portrait
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
-        
-        // Tempel gambar kanvas menutupi penuh area PDF
         pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-        
-        // Unduh
         pdf.save(`Lisensi_${document.getElementById('input-judul').value || 'SAI_Roots'}.pdf`);
     });
 }
