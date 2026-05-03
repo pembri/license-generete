@@ -143,6 +143,12 @@
     height: 76px;
     margin: 0 auto 5px auto;
 }
+/* TAMBAHIN KODE DI BAWAH INI BIAR BARCODE HD BISA FIT KE KOTAK KECIL */
+#qrcode img, #qrcode canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+}
 #qrcode img {
     width: 100%;
     height: 100%;
