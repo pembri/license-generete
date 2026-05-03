@@ -40,7 +40,6 @@ function generateUniqueID(judul) {
 // 3. ENGINE GENERATOR & QR CODE FIX
 // ==========================================
 function initGenerator() {
-    // FIX QR CODE: Inisialisasi HANYA SEKALI di awal untuk mencegah memory leak/crash
     qrCodeObj = new QRCode(document.getElementById("qrcode"), {
         text: "SAI ROOTS MUSIC VERIFIED",
         width: 68,
@@ -68,7 +67,6 @@ function updatePreview() {
     const tanggalFormat = formatDate(data.tanggalOri);
     const nomorUnik = generateUniqueID(data.judul);
 
-    // Tulis Text ke Kertas
     document.getElementById('tampil-pencipta').innerText = data.pencipta;
     document.getElementById('tampil-pemegang').innerText = data.pemegang;
     document.getElementById('tampil-alamat').innerText = data.alamat;
@@ -78,7 +76,6 @@ function updatePreview() {
     document.getElementById('tampil-nomor').innerText = nomorUnik;
     document.getElementById('tampil-album').innerText = data.album.trim() === "" ? "- (Single)" : data.album;
 
-    // FIX QR CODE: Update text QR saja tanpa membuat elemen baru
     const qrText = `NO: ${nomorUnik}\nPENCIPTA: ${data.pencipta}\nHAK CIPTA: ${data.pemegang}\nJUDUL: ${data.judul}\nALBUM: ${data.album || 'Single'}\nTANGGAL: ${tanggalFormat}`;
     if (qrCodeObj) {
         qrCodeObj.makeCode(qrText);
@@ -86,7 +83,7 @@ function updatePreview() {
 }
 
 // ==========================================
-// 4. LOGIKA MODAL PREVIEW (ANTI KEPOTONG)
+// 4. LOGIKA MODAL PREVIEW 
 // ==========================================
 function openPreview() {
     const modal = document.getElementById('preview-modal');
@@ -94,7 +91,6 @@ function openPreview() {
     
     modal.style.display = 'block';
     
-    // Auto-scale preview agar muat di layar HP/Laptop tanpa mengubah ukuran asli canvas untuk download
     const scale = Math.min(
         (window.innerWidth - 40) / 794,
         (window.innerHeight - 100) / 1123
@@ -112,45 +108,61 @@ function closePreview() {
 }
 
 // ==========================================
-// 5. ENGINE EKSPOR MUTLAK (ANTI BERBAYANG)
+// 5. ENGINE EKSPOR (ANTI BLANK & FORMAT PNG)
 // ==========================================
 
-// Fungsi inti untuk render canvas dengan aman
 async function captureCanvas() {
-    window.scrollTo(0, 0); // Cegah bug scroll
+    window.scrollTo(0, 0); 
+    const modal = document.getElementById('preview-modal');
+    const isHidden = window.getComputedStyle(modal).display === 'none';
+
+    // Trik Ninja: Buka modal diam-diam di luar layar supaya ukurannya bisa dibaca sistem
+    if (isHidden) {
+        modal.style.display = 'block';
+        modal.style.position = 'fixed';
+        modal.style.left = '-9999px'; 
+    }
+
     const element = document.getElementById('certificate-canvas');
     
-    return await html2canvas(element, { 
-        scale: 2, // Kualitas tinggi (Retina/Print Ready)
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-        width: 794, // Paksa lebar asli A4
-        height: 1123, // Paksa tinggi asli A4
-        onclone: (clonedDoc) => {
-            // FIX BERBAYANG: Pastikan elemen clone bersih dari efek CSS Transform sebelum difoto
-            const clonedElement = clonedDoc.getElementById('certificate-canvas');
-            clonedElement.style.transform = 'none';
+    try {
+        const canvas = await html2canvas(element, { 
+            scale: 2, 
+            useCORS: true,
+            backgroundColor: "#ffffff",
+            logging: false,
+            width: 794, 
+            height: 1123, 
+            onclone: (clonedDoc) => {
+                const clonedElement = clonedDoc.getElementById('certificate-canvas');
+                clonedElement.style.transform = 'none'; 
+            }
+        });
+        return canvas;
+    } finally {
+        // Balikin kondisi modal ke semula (tutup lagi)
+        if (isHidden) {
+            modal.style.display = 'none';
+            modal.style.left = '0';
         }
-    });
+    }
 }
 
 function downloadImage() {
-    // Ubah teks tombol sementara
     const btn = event.currentTarget;
     const originalText = btn.innerHTML;
     btn.innerHTML = "Memproses... ⏳";
     btn.disabled = true;
 
     captureCanvas().then(canvas => {
-        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        // Ekspor menjadi PNG
+        const imgData = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         const fileName = document.getElementById('input-judul').value.replace(/[^a-zA-Z0-9]/g, '_') || 'SAI_Roots';
-        link.download = `Sertifikat_${fileName}.jpg`;
+        link.download = `Sertifikat_${fileName}.png`; // Format file diganti jadi .png
         link.href = imgData;
         link.click();
         
-        // Kembalikan tombol
         btn.innerHTML = originalText;
         btn.disabled = false;
     }).catch(err => {
@@ -170,6 +182,7 @@ function downloadPDF() {
     const { jsPDF } = window.jspdf;
     
     captureCanvas().then(canvas => {
+        // Tetap pakai kompresi JPEG di dalam dokumen PDF agar ringan dikirim
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
         const pdf = new jsPDF('p', 'px', [794, 1123]);
         pdf.addImage(imgData, 'JPEG', 0, 0, 794, 1123);
