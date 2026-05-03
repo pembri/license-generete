@@ -1,0 +1,30 @@
+/* Styling Kanvas A4 */
+.a4-page {
+    width: 794px; /* Lebar A4 dalam pixel pada resolusi 96 DPI */
+    height: 1123px; /* Tinggi A4 dalam pixel */
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+/* Memperbaiki font serif bawaan Tailwind agar lebih mirip Times New Roman resmi */
+.font-serif {
+    font-family: 'Times New Roman', Times, serif;
+}
+
+/* Agar tabel tidak terlalu renggang */
+table td {
+    padding-bottom: 0.5rem;
+}
+
+/* Efek multiply untuk stempel agar background putih sertifikat bisa tembus sedikit (mirip tinta asli) */
+.mix-blend-multiply {
+    mix-blend-mode: multiply;
+}
+
+/* Menghilangkan scrollbar di area preview untuk tampilan yang lebih bersih */
+.preview-container::-webkit-scrollbar {
+    display: none;
+}
+.preview-container {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
