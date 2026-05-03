@@ -1,30 +1,142 @@
 /* Styling Kanvas A4 */
 .a4-page {
-    width: 794px; /* Lebar A4 dalam pixel pada resolusi 96 DPI */
-    height: 1123px; /* Tinggi A4 dalam pixel */
+    width: 794px; /* Lebar A4 Pixel */
+    height: 1123px; /* Tinggi A4 Pixel */
     box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    background-color: white;
 }
 
-/* Memperbaiki font serif bawaan Tailwind agar lebih mirip Times New Roman resmi */
 .font-serif {
     font-family: 'Times New Roman', Times, serif;
 }
 
-/* Agar tabel tidak terlalu renggang */
-table td {
-    padding-bottom: 0.5rem;
+/* MARGIN AMAN BINGKAI (Sangat Penting) */
+/* Koordinat ini mengunci teks agar diam di dalam area putih */
+.full-content {
+    position: absolute;
+    top: 120px;    /* Jarak dari tepi atas kertas */
+    bottom: 110px; /* Jarak dari tepi bawah kertas */
+    left: 110px;   /* Jarak dari tepi kiri kertas */
+    right: 110px;  /* Jarak dari tepi kanan kertas */
 }
 
-/* Efek multiply untuk stempel agar background putih sertifikat bisa tembus sedikit (mirip tinta asli) */
-.mix-blend-multiply {
-    mix-blend-mode: multiply;
+/* Header */
+.header-section {
+    margin-bottom: 30px;
+    margin-top: 10px;
+}
+.kop-surat {
+    letter-spacing: 1px;
+    font-size: 18px;
+}
+.title-surat {
+    letter-spacing: 2px;
+    font-size: 24px;
+    margin-top: 5px;
 }
 
-/* Menghilangkan scrollbar di area preview untuk tampilan yang lebih bersih */
-.preview-container::-webkit-scrollbar {
-    display: none;
+/* Preamble */
+.preamble-text {
+    font-size: 15px;
+    margin-bottom: 25px;
 }
-.preview-container {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+
+/* Tabel Kaku (Presisi) */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 20px;
 }
+.data-table td {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    vertical-align: top;
+}
+
+/* Lebar Kolom Pixel Tetap */
+.col-nomor { width: 35px; font-weight: bold; }
+.col-label { width: 200px; }
+.col-titik { width: 15px; text-align: center; }
+.col-value { width: auto; }
+
+.sub-table-data { width: 100%; border-collapse: collapse; }
+.sub-table-data td { padding-top: 2px; padding-bottom: 2px; }
+.sub-label { width: 130px; color: #333; }
+.sub-titik { width: 15px; text-align: center; }
+
+/* Disclaimer ditarik ke paling bawah kontainer */
+.disclaimer-text {
+    font-size: 12px;
+    color: #222;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+    margin-bottom: 10px;
+}
+
+/* AREA FOOTER KAKU */
+.footer-section {
+    position: relative;
+    width: 100%;
+    height: 140px; /* Ruang khusus untuk TTD dan Barcode */
+}
+
+/* Barcode Kiri Bawah */
+.barcode-area {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    text-align: center;
+}
+.qrcode-box {
+    border: 1px solid #b8860b;
+    padding: 4px;
+    margin-bottom: 3px;
+}
+.verified-label {
+    font-family: 'Arial', sans-serif;
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #b8860b;
+}
+
+/* Tanda Tangan Kanan Bawah */
+.signature-area {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 250px;
+    text-align: center;
+}
+.ttd-date {
+    font-size: 14px;
+    margin-bottom: 70px; /* Jarak kosong untuk tanda tangan */
+}
+.ttd-office {
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: underline;
+}
+.ttd-name {
+    font-size: 12px;
+}
+
+/* STEMPEL (Posisi Numpuk TTD) */
+.stempel-img {
+    position: absolute;
+    bottom: 10px;   /* Atur angka ini kalau kurang naik/turun */
+    right: 60px;    /* Atur angka ini kalau kurang geser kiri/kanan */
+    width: 130px; 
+    height: 130px;
+    opacity: 0.8;
+    transform: rotate(-15deg);
+    z-index: 20;
+    pointer-events: none;
+    mix-blend-mode: multiply; /* Supaya background putih dari gambar stempel hilang */
+}
+
+/* Sembunyikan scrollbar di panel kanan */
+.preview-container::-webkit-scrollbar { display: none; }
+.preview-container { -ms-overflow-style: none; scrollbar-width: none; }
