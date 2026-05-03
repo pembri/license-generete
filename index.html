@@ -1,101 +1,77 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAI Roots Certificate Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body class="bg-neutral-900 text-gray-200 font-sans min-h-screen">
-
-    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900">
-        <div class="bg-neutral-800 p-8 rounded-lg shadow-2xl border border-yellow-600 w-96 text-center">
-            <h2 class="text-2xl font-bold text-yellow-500 mb-2">SAI ROOTS MUSIC</h2>
-            <input type="password" id="password-input" placeholder="Masukkan Kata Sandi" class="w-full bg-neutral-700 px-4 py-2 rounded focus:ring-yellow-500 mb-4 text-center">
-            <button onclick="checkPassword()" class="w-full bg-yellow-600 hover:bg-yellow-700 font-bold py-2 px-4 rounded transition">AKSES ALAT</button>
-            <p id="login-error" class="text-red-500 text-sm mt-3 hidden">Kata sandi salah!</p>
-        </div>
-    </div>
-
-    <div id="main-app" class="hidden container mx-auto p-4 flex flex-col xl:flex-row gap-8 items-start justify-center min-h-screen">
+<div class="w-full xl:w-2/3 flex justify-center py-4 bg-neutral-800 rounded-lg preview-container">
+    
+    <!-- Wrapper Preview (boleh di-scale) -->
+    <div id="preview-wrapper" class="preview-wrapper">
         
-        <div class="w-full xl:w-1/3 bg-neutral-800 p-6 rounded-lg shadow-xl border-t-4 border-yellow-600 z-20">
-            <h1 class="text-xl font-bold text-white mb-6 border-b border-neutral-700 pb-2">Data Lisensi Hak Cipta</h1>
-            <form id="cert-form" class="space-y-4">
-                <div><label class="block text-sm font-medium text-gray-400">Nama Pencipta</label><input type="text" id="input-pencipta" class="ui-input" placeholder="Ahmad Supembri"></div>
-                <div><label class="block text-sm font-medium text-gray-400">Pemegang Hak Cipta</label><input type="text" id="input-pemegang" class="ui-input" value="SAI Roots Music"></div>
-                <div><label class="block text-sm font-medium text-gray-400">Alamat</label><input type="text" id="input-alamat" class="ui-input" value="Jombang, Jawa Timur"></div>
-                <div><label class="block text-sm font-medium text-gray-400">Judul Lagu</label><input type="text" id="input-judul" class="ui-input" placeholder="Judul Lagu Asli"></div>
-                <div><label class="block text-sm font-medium text-gray-400">Album</label><input type="text" id="input-album" class="ui-input" placeholder="Kosongkan jika Single"></div>
-                <div><label class="block text-sm font-medium text-gray-400">Tanggal Pembuatan</label><input type="date" id="input-tanggal" class="ui-input"></div>
-            </form>
-            <div class="mt-8 space-y-3">
-                <button onclick="downloadImage()" class="w-full bg-blue-600 hover:bg-blue-700 font-bold py-2 px-4 rounded">⬇️ Download Gambar (JPG)</button>
-                <button onclick="downloadPDF()" class="w-full bg-green-600 hover:bg-green-700 font-bold py-2 px-4 rounded">⬇️ Download PDF (A4)</button>
+        <!-- CANVAS ASLI (JANGAN DI-SCALE LANGSUNG) -->
+        <div id="certificate-canvas" class="cert-paper">
+            
+            <div class="cert-content">
+                <div class="cert-header">
+                    <h2>MANAJEMEN LABEL SAI ROOTS MUSIC</h2>
+                    <h1>SURAT PENCATATAN KARYA MUSIK</h1>
+                </div>
+
+                <div class="cert-preamble">
+                    Manajemen Label <strong>SAI Roots Music</strong>, berdasarkan ketentuan publikasi dan perlindungan karya internal, dengan ini menerangkan bahwa hal-hal tersebut di bawah ini telah terdaftar secara sah dalam Daftar Umum Karya SAI Roots Music:
+                </div>
+
+                <table class="cert-table">
+                    <tr><td class="c-num">I.</td><td class="c-lbl">Nomor Pendaftaran</td><td class="c-tik">:</td><td class="c-val cert-bold cert-mono cert-blue" id="tampil-nomor">SRM-0000-0000</td></tr>
+
+                    <tr>
+                        <td class="c-num">II.</td>
+                        <td class="c-lbl">Pencipta</td>
+                        <td class="c-tik">:</td>
+                        <td class="c-val">
+                            <table class="sub-table">
+                                <tr><td class="s-lbl">Nama</td><td class="s-tik">:</td><td id="tampil-pencipta">.......................................</td></tr>
+                                <tr><td class="s-lbl">Kewarganegaraan</td><td class="s-tik">:</td><td>Indonesia</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="c-num">III.</td>
+                        <td class="c-lbl">Pemegang Hak Cipta</td>
+                        <td class="c-tik">:</td>
+                        <td class="c-val">
+                            <table class="sub-table">
+                                <tr><td class="s-lbl">Nama Label</td><td class="s-tik">:</td><td class="cert-bold" id="tampil-pemegang">SAI ROOTS MUSIC</td></tr>
+                                <tr><td class="s-lbl">Alamat</td><td class="s-tik">:</td><td id="tampil-alamat">Jombang, Jawa Timur</td></tr>
+                                <tr><td class="s-lbl">Kewarganegaraan</td><td class="s-tik">:</td><td>Indonesia</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr><td class="c-num">IV.</td><td class="c-lbl">Jenis Ciptaan</td><td class="c-tik">:</td><td class="c-val">Karya Musik (Audio & Lirik)</td></tr>
+                    <tr><td class="c-num">V.</td><td class="c-lbl">Judul Ciptaan</td><td class="c-tik">:</td><td class="c-val cert-bold cert-upper" id="tampil-judul">.......................................</td></tr>
+                    <tr><td class="c-num">VI.</td><td class="c-lbl">Album</td><td class="c-tik">:</td><td class="c-val" id="tampil-album">- (Single)</td></tr>
+                    <tr><td class="c-num">VII.</td><td class="c-lbl">Tanggal Pembuatan</td><td class="c-tik">:</td><td class="c-val" id="tampil-tanggal">.......................................</td></tr>
+                    <tr><td class="c-num">VIII.</td><td class="c-lbl">Masa Berlaku</td><td class="c-tik">:</td><td class="c-val">Berlaku selama karya didistribusikan di bawah naungan label.</td></tr>
+                </table>
+
+                <div class="cert-disclaimer">
+                    Pencatatan Ciptaan ini adalah sebagai bentuk perlindungan hak distribusi mekanikal, digital, dan hak siar secara eksklusif yang dikelola oleh SAI Roots Music. Segala bentuk penggandaan dan penggunaan komersial tanpa izin tertulis dari manajemen adalah bentuk pelanggaran lisensi.
+                </div>
             </div>
-        </div>
 
-        <div class="w-full xl:w-2/3 flex justify-center py-4 overflow-auto bg-neutral-800 rounded-lg preview-container">
-            <div class="transform scale-50 md:scale-75 lg:scale-90 xl:scale-100 origin-top">
-                
-                <div id="certificate-canvas" class="cert-paper">
-                    
-                    <div class="cert-content">
-                        <div class="cert-header">
-                            <h2>MANAJEMEN LABEL SAI ROOTS MUSIC</h2>
-                            <h1>SURAT PENCATATAN KARYA MUSIK</h1>
-                        </div>
+            <!-- QR -->
+            <div class="cert-barcode-box">
+                <div id="qrcode"></div>
+                <div class="cert-verify-text">VERIFIED ASSET</div>
+            </div>
 
-                        <div class="cert-preamble">
-                            Manajemen Label <strong>SAI Roots Music</strong>, berdasarkan ketentuan publikasi dan perlindungan karya internal, dengan ini menerangkan bahwa hal-hal tersebut di bawah ini telah terdaftar secara sah dalam Daftar Umum Karya SAI Roots Music:
-                        </div>
+            <!-- TTD -->
+            <div class="cert-ttd-box">
+                <div class="ttd-kota">Jombang, <span id="tampil-ttd-tanggal">........................</span></div>
+                <div class="ttd-jabatan">MANAJEMEN SAI ROOTS MUSIC</div>
+                <div class="ttd-nama">DIREKTUR UTAMA</div>
+            </div>
 
-                        <table class="cert-table">
-                            <tr><td class="c-num">I.</td><td class="c-lbl">Nomor Pendaftaran</td><td class="c-tik">:</td><td class="c-val cert-bold cert-mono cert-blue" id="tampil-nomor">SRM-0000-0000</td></tr>
-                            <tr><td class="c-num">II.</td><td class="c-lbl">Pencipta</td><td class="c-tik">:</td><td class="c-val">
-                                <table class="sub-table">
-                                    <tr><td class="s-lbl">Nama</td><td class="s-tik">:</td><td id="tampil-pencipta">.......................................</td></tr>
-                                    <tr><td class="s-lbl">Kewarganegaraan</td><td class="s-tik">:</td><td>Indonesia</td></tr>
-                                </table>
-                            </td></tr>
-                            <tr><td class="c-num">III.</td><td class="c-lbl">Pemegang Hak Cipta</td><td class="c-tik">:</td><td class="c-val">
-                                <table class="sub-table">
-                                    <tr><td class="s-lbl">Nama Label</td><td class="s-tik">:</td><td class="cert-bold" id="tampil-pemegang">SAI ROOTS MUSIC</td></tr>
-                                    <tr><td class="s-lbl">Alamat</td><td class="s-tik">:</td><td id="tampil-alamat">Jombang, Jawa Timur</td></tr>
-                                    <tr><td class="s-lbl">Kewarganegaraan</td><td class="s-tik">:</td><td>Indonesia</td></tr>
-                                </table>
-                            </td></tr>
-                            <tr><td class="c-num">IV.</td><td class="c-lbl">Jenis Ciptaan</td><td class="c-tik">:</td><td class="c-val">Karya Musik (Audio & Lirik)</td></tr>
-                            <tr><td class="c-num">V.</td><td class="c-lbl">Judul Ciptaan</td><td class="c-tik">:</td><td class="c-val cert-bold cert-upper" id="tampil-judul">.......................................</td></tr>
-                            <tr><td class="c-num">VI.</td><td class="c-lbl">Album</td><td class="c-tik">:</td><td class="c-val" id="tampil-album">- (Single)</td></tr>
-                            <tr><td class="c-num">VII.</td><td class="c-lbl">Tanggal Pembuatan</td><td class="c-tik">:</td><td class="c-val" id="tampil-tanggal">.......................................</td></tr>
-                            <tr><td class="c-num">VIII.</td><td class="c-lbl">Masa Berlaku</td><td class="c-tik">:</td><td class="c-val">Berlaku selama karya didistribusikan di bawah naungan label.</td></tr>
-                        </table>
+            <!-- STEMPEL -->
+            <img src="assets/stempel.png" alt="Stempel" class="cert-stempel">
 
-                        <div class="cert-disclaimer">
-                            Pencatatan Ciptaan ini adalah sebagai bentuk perlindungan hak distribusi mekanikal, digital, dan hak siar secara eksklusif yang dikelola oleh SAI Roots Music. Segala bentuk penggandaan dan penggunaan komersial tanpa izin tertulis dari manajemen adalah bentuk pelanggaran lisensi.
-                        </div>
-                    </div> <div class="cert-barcode-box">
-                        <div id="qrcode"></div>
-                        <div class="cert-verify-text">VERIFIED ASSET</div>
-                    </div>
-
-                    <div class="cert-ttd-box">
-                        <div class="ttd-kota">Jombang, <span id="tampil-ttd-tanggal">........................</span></div>
-                        <div class="ttd-jabatan">MANAJEMEN SAI ROOTS MUSIC</div>
-                        <div class="ttd-nama">DIREKTUR UTAMA</div>
-                    </div>
-
-                    <img src="assets/stempel.png" alt="Stempel" class="cert-stempel">
-
-                </div> </div>
         </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
+</div>
